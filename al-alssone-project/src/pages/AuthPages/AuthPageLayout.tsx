@@ -1,7 +1,6 @@
 import React from "react";
 import GridShape from "../../components/common/GridShape";
 import { Link } from "react-router";
-import ThemeTogglerTwo from "../../components/common/ThemeTogglerTwo";
 
 export default function AuthLayout({
   children,
@@ -24,14 +23,13 @@ export default function AuthLayout({
                   alt="Logo"
                 />
               </Link>
-              <p className="text-center text-gray-600 dark:text-gray-900">
+              <p className="text-center text-gray-600 ">
               Bienvenue dans l'application de gestion des paiements de l'école Al Alssone.
               </p>
             </div>
           </div>
         </div>
         <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
-          <ThemeTogglerTwo />
         </div>
       </div>
     </div>

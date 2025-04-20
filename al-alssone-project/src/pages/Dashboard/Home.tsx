@@ -1,5 +1,4 @@
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
-import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 
 import PageMeta from "../../components/common/PageMeta";
 
@@ -17,10 +16,6 @@ export default function Home() {
         </div>
 
      
-
-        <div className="col-span-12">
-          <StatisticsChart />
-        </div>
 
    
       </div>
