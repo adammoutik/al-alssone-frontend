@@ -4,32 +4,25 @@ import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
-import axios from "../../services/axios"; 
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [emailOrUsername, setEmailOrUsername] = useState(""); // Combine both email and username
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+
+  // 🧪 Pre-filled test credentials
+  const [emailOrUsername, setEmailOrUsername] = useState("testuser");
+  const [password, setPassword] = useState("test1234");
+
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const response = await axios.post("/auth/login", {
-        emailOrUsername, 
-        password,
-      });
-
-      const token = response.data.accesstoken; // Make sure the backend sends 'accesstoken'
-      localStorage.setItem("token", token);
-
-      navigate("/"); // change this route as needed
-    } catch (err: unknown) {
-      console.error('Error during login:', err); // Log the error here
-      setError("An error occurred during login");
-    }
+  
+    // Simulate a successful login
+    localStorage.setItem("token", "fakeToken123"); // Optional: fake token for testing
+  
+    navigate("/"); // Redirect to home
   };
+  
 
   return (
     <div className="flex flex-col flex-1">
@@ -79,7 +72,6 @@ export default function SignInForm() {
               </div>
             </div>
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
 
             <div className="flex items-center justify-between">
               <Link
