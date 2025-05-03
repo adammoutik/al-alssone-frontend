@@ -12,6 +12,7 @@ import Home from "./pages/Dashboard/Home";
 // import StudentsSection from "./components/students/StudentsSection";
 import StudentPage from "./pages/Tables/StudentPage";
 import UserPage from "./pages/users/UserPage";
+import FeePage from "./pages/fees/FeePage";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
             <Route index path="/" element={<Home />} />
             <Route path="/students" element={<StudentPage />} />
             <Route path="/users" element={<UserPage />} />
+            <Route path="/fees" element={<FeePage />} />
 
            
 
