@@ -215,19 +215,19 @@ export default function FeesDashboard() {
                   <td className="p-2 border space-x-2">
                     <button
                       onClick={() => setViewedFee(fee)}
-                      className="text-green-600 hover:text-green-800 transition"
+                      className="text-green-400 hover:text-green-800 transition"
                     >
                       <FaEye className="inline-block mr-1" /> 
                     </button>
                     <button
                       onClick={() => handleEdit(fee)}
-                      className="text-blue-600 hover:text-blue-800 transition"
+                      className="text-blue-400 hover:text-blue-800 transition"
                     >
                       <FaEdit className="inline-block mr-1" /> 
                     </button>
                     <button
                       onClick={() => handleDelete(fee._id)}
-                      className="text-red-600 hover:text-red-800 transition"
+                      className="text-red-400 hover:text-red-800 transition"
                     >
                       <FaTrashAlt className="inline-block mr-1" /> 
                     </button>
