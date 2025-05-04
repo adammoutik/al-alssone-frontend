@@ -13,7 +13,8 @@ import Home from "./pages/Dashboard/Home";
 import StudentPage from "./pages/Tables/StudentPage";
 import UserPage from "./pages/users/UserPage";
 import FeePage from "./pages/fees/FeePage";
-import FamilyPage from './pages/families/familyPage';
+import FamilyPage from './pages/families/FamilyPage';
+import PaymentPage from "./pages/payments/PaymentPage";
 
 
 export default function App() {
@@ -25,10 +26,22 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
-            <Route path="/students" element={<StudentPage />} />
-            <Route path="/users" element={<UserPage />} />
+
             <Route path="/fees" element={<FeePage />} />
+
+            <Route path="/students" element={<StudentPage />} />
+            
             <Route path="/families" element={<FamilyPage />} />
+
+            <Route path="/payments" element={<PaymentPage />} />
+
+            <Route path="/users" element={<UserPage />} />
+
+
+
+
+
+
 
            
 

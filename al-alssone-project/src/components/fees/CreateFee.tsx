@@ -92,7 +92,7 @@ export default function FeesDashboard() {
   };
 
   const filteredFees = fees.filter((fee) =>
-    [fee.type, fee.category, fee.description]
+    [fee.type, fee.category]
       .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 

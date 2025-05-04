@@ -1,14 +1,14 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import UserSection from "../../components/users/UserSection";
+import PaymentSection from "../../components/payments/PaymentSection";
 
 
-export default function UserPage() {
+export default function PaymentPage() {
   return (
     <>
       
       <PageBreadcrumb pageTitle="" />
       <div className="space-y-6">
-      <UserSection />
+      <PaymentSection />
       </div>
     </>
   );
