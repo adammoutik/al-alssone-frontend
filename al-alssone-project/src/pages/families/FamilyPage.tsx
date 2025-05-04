@@ -1,13 +1,13 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import CreateFee from "../../components/fees/CreateFee";
+import FamiliesSection from "../../components/families/FamiliesSection";
 
-export default function FeePage() {
+export default function FamilyPage() {
   return (
     <>
       
       <PageBreadcrumb pageTitle="" />
       <div className="space-y-6">
-          <CreateFee />
+          <FamiliesSection />
       </div>
     </>
   );
