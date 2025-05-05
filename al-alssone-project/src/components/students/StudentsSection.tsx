@@ -216,6 +216,17 @@ export default function StudentsSection() {
               )}
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+            <input
+              name="registrationDate"
+              type="date"
+              value={form.registrationDate}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+              required
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>

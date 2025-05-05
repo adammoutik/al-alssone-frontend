@@ -120,7 +120,7 @@ export default function FamiliesManager() {
     } catch (err) {
       console.error("Error adding child:", err);
       setModalMessage({ 
-        text: err.response?.data?.message || "Family already has maximum number of children (2)", 
+        text: err.response?.data?.message || "Error adding child to family", 
         type: "error" 
       });
     }
@@ -173,7 +173,7 @@ export default function FamiliesManager() {
   });
 
   if (loading) {
-    return <div className="p-6 text-center"></div>;
+    return <div className="p-6 text-center">Loading...</div>;
   }
 
   if (error) {
@@ -321,73 +321,70 @@ export default function FamiliesManager() {
         )}
       </div>
 
- 
+      {/* Add Child Modal */}
+      {showAddChildModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <form onSubmit={handleAddChild} className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Add Child to Family</h3>
+            
+            {modalMessage.text && (
+              <div className={`mb-4 p-3 rounded ${
+                modalMessage.type === "error" 
+                  ? "bg-red-100 text-red-700" 
+                  : "bg-green-100 text-green-700"
+              }`}>
+                {modalMessage.text}
+              </div>
+            )}
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Student
+              </label>
+              <select
+                className="border p-2 w-full rounded"
+                value={addChildForm.studentId}
+                onChange={(e) => setAddChildForm({...addChildForm, studentId: e.target.value})}
+                required
+              >
+                <option value="">Select a student</option>
+                {students.map(student => (
+                  <option key={student._id} value={student._id}>
+                    {student.firstName} {student.lastName} 
+                    {student.category && ` (${student.category}`}
+                    {student.niveau && ` - ${student.niveau})`}
+                    {families.some(family => 
+                      family.children && family.children.some(child => child._id === student._id)
+                    ) && " [Assigned]"}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Students marked with "[Assigned]" are already in a family
+              </p>
+            </div>
 
-  {/* Add Child Modal */}
-{showAddChildModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <form onSubmit={handleAddChild} className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-      <h3 className="text-xl font-bold mb-4">Add Child to Family</h3>
-      
-      {modalMessage.text && (
-        <div className={`mb-4 p-3 rounded ${
-          modalMessage.type === "error" 
-            ? "bg-red-100 text-red-700" 
-            : "bg-green-100 text-green-700"
-        }`}>
-          {modalMessage.text}
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddChildModal(false);
+                  setModalMessage({ text: "", type: "" });
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Add Child
+              </button>
+            </div>
+          </form>
         </div>
       )}
-      
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Select Student
-        </label>
-        <select
-          className="border p-2 w-full rounded"
-          value={addChildForm.studentId}
-          onChange={(e) => setAddChildForm({...addChildForm, studentId: e.target.value})}
-          required
-        >
-          <option value="">Select a student</option>
-          {students
-            .filter(student => !families.some(family => 
-              family.children && family.children.some(student => student._id === student._id)
-            ))
-            .map(student => (
-              <option key={student._id} value={student._id}>
-                {student.firstName} {student.lastName} 
-                {student.category && ` (${student.category}`}
-                {student.niveau && ` - ${student.niveau})`}
-              </option>
-            ))}
-        </select>
-        <p className="text-xs text-gray-500 mt-1">
-          Only shows students not already assigned to a family
-        </p>
-      </div>
-
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={() => {
-            setShowAddChildModal(false);
-            setModalMessage({ text: "", type: "" });
-          }}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Add Child
-        </button>
-      </div>
-    </form>
-  </div>
-)}
     </div>
   );
 }
