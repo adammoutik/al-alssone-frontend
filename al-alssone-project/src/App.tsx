@@ -30,8 +30,9 @@ export default function App() {
             <Route path="/fees" element={<FeePage />} />
 
             <Route path="/students" element={<StudentPage />} />
-            
+
             <Route path="/families" element={<FamilyPage />} />
+
 
             <Route path="/payments" element={<PaymentPage />} />
 
