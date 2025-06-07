@@ -5,13 +5,6 @@ import {
   FaEdit,
   FaTrashAlt,
   FaUserPlus,
-  FaPhone,
-  FaChild,
-  FaSchool,
-  FaBirthdayCake,
-  FaCalendarAlt,
-  FaBus,
-  FaClock,
   FaEnvelope
 } from "react-icons/fa";
 
@@ -34,32 +27,24 @@ export default function FamiliesManager() {
   });
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [modalMessage, setModalMessage] = useState({ text: "", type: "" });
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewedStudent, setViewedStudent] = useState(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [familiesRes, studentsRes] = await Promise.all([
+          api.get("/families"),
+          api.get("/students"),
+        ]);
+        setFamilies(familiesRes.data || []);
+        setStudents(studentsRes.data || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+      }
+    };
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [familiesRes, studentsRes] = await Promise.all([
-        api.get("/families"),
-        api.get("/students"),
-      ]);
-      setFamilies(familiesRes.data || []);
-      setStudents(studentsRes.data || []);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to load data. Please try again later.");
-      setMessage({ text: "Failed to load data", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -89,7 +74,8 @@ export default function FamiliesManager() {
         await api.post("/families", payload);
         setMessage({ text: "Family created successfully!", type: "success" });
       }
-      fetchData();
+      const familiesRes = await api.get("/families");
+      setFamilies(familiesRes.data || []);
       resetForm();
     } catch (err) {
       console.error("Error saving family:", err);
@@ -116,7 +102,8 @@ export default function FamiliesManager() {
       try {
         await api.delete(`/families/${id}`);
         setMessage({ text: "Family deleted successfully!", type: "success" });
-        fetchData();
+        const familiesRes = await api.get("/families");
+        setFamilies(familiesRes.data || []);
       } catch (err) {
         console.error("Error deleting family:", err);
         setMessage({ 
@@ -135,6 +122,10 @@ export default function FamiliesManager() {
       });
       setModalMessage({ text: "Child added to family successfully!", type: "success" });
       setTimeout(() => {
+        const fetchData = async () => {
+          const familiesRes = await api.get("/families");
+          setFamilies(familiesRes.data || []);
+        };
         fetchData();
         setShowAddChildModal(false);
         setAddChildForm({ familyId: "", studentId: "" });
@@ -160,10 +151,6 @@ export default function FamiliesManager() {
     });
   };
 
-  const handleViewStudent = (student) => {
-    setViewedStudent(student);
-  };
-
   const renderChildren = (family) => {
     if (!family.children || family.children.length === 0) {
       return <span className="text-gray-500">No children</span>;
@@ -181,13 +168,13 @@ export default function FamiliesManager() {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => handleViewStudent(student)}
+            {/* <button
+              onClick={() => setViewedStudent(student)}
               className="text-blue-400 hover:text-blue-600 ml-2"
               title="View student details"
             >
               <FaEye />
-            </button>
+            </button> */}
           </div>
         ))}
       </div>
@@ -199,7 +186,6 @@ export default function FamiliesManager() {
     family?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="p-6 text-center">Loading...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
   return (
@@ -280,7 +266,7 @@ export default function FamiliesManager() {
           </label>
         </div>
 
-        {form.isEligible && form.id && families.some(f => f._id === form.id && f.children?.length > 0) && (
+        {form.isEligible && form.id && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Discount Child
