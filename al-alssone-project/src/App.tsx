@@ -15,6 +15,10 @@ import UserPage from "./pages/users/UserPage";
 import FeePage from "./pages/fees/FeePage";
 import FamilyPage from './pages/families/FamilyPage';
 import PaymentPage from "./pages/payments/PaymentPage";
+import PaymentsHistory from "./components/Historique/PaymentsHistory";
+import NotificationPage from "./pages/notifications/NotificationPage";
+import UserProfile from "./components/UserProfile/UserProfile";
+import PaymentDetails from "./components/Historique/PaymentDetails";
 
 
 export default function App() {
@@ -36,7 +40,22 @@ export default function App() {
 
             <Route path="/payments" element={<PaymentPage />} />
 
+             <Route path="/Historique" element={<PaymentsHistory />} />
+
+              <Route path="/payments/:id" element={<PaymentDetails />} />
+
+
+
+
             <Route path="/users" element={<UserPage />} />
+
+             <Route path="/UserProfile" element={<UserProfile />} />
+
+
+
+            <Route path="/notifications" element={<NotificationPage />} />
+
+
 
 
 

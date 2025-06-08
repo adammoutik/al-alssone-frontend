@@ -1,6 +1,5 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import PaymentsDashboard from "../../components/payments/PaymentSection";
-// import PaymentSection from "../../components/payments/PaymentSection";
+import PaymentsHistory from "../../components/Historique/PaymentsHistory";
 
 
 export default function PaymentPage() {
@@ -9,7 +8,7 @@ export default function PaymentPage() {
       
       <PageBreadcrumb pageTitle="" />
       <div className="space-y-6">
-      <PaymentsDashboard />
+      <PaymentsHistory />
       </div>
     
     </>

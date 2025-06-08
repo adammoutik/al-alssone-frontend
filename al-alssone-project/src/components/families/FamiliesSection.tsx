@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/axios";
-import { FaEye, FaEdit, FaTrashAlt, FaUserPlus, FaPhone, FaChild, FaSchool, FaBirthdayCake, FaCalendarAlt, FaBus, FaClock } from "react-icons/fa";
+import {
+  FaEye,
+  FaEdit,
+  FaTrashAlt,
+  FaUserPlus,
+  FaEnvelope
+} from "react-icons/fa";
 
 export default function FamiliesManager() {
-  // State declarations
   const [families, setFamilies] = useState([]);
   const [students, setStudents] = useState([]);
   const [form, setForm] = useState({
     familyName: "",
+    email: "",
     discountPercentage: 20,
-    IsEligible: true,
+    isEligible: false,
+    discountChild: "",
     id: null,
   });
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,41 +27,31 @@ export default function FamiliesManager() {
   });
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [modalMessage, setModalMessage] = useState({ text: "", type: "" });
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewedStudent, setViewedStudent] = useState(null);
-
-  // Fetch all families and students
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [familiesRes, studentsRes] = await Promise.all([
-        api.get("/families"),
-        api.get("/students"),
-      ]);
-      setFamilies(familiesRes.data || []);
-      setStudents(studentsRes.data || []);
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to load data. Please try again later.");
-      setMessage({ text: "Failed to load data", type: "error" });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [familiesRes, studentsRes] = await Promise.all([
+          api.get("/families"),
+          api.get("/students"),
+        ]);
+        setFamilies(familiesRes.data || []);
+        setStudents(studentsRes.data || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
+      }
+    };
     fetchData();
   }, []);
 
-  // Form handlers
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
+    setForm((prevForm) => ({
+      ...prevForm,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -62,27 +59,40 @@ export default function FamiliesManager() {
     setMessage({ text: "", type: "" });
 
     try {
+      const payload = {
+        familyName: form.familyName,
+        email: form.email,
+        discountPercentage: form.discountPercentage,
+        IsEligible: form.isEligible,
+        discountChild: form.discountChild || undefined
+      };
+
       if (form.id) {
-        await api.put(`/families/${form.id}`, form);
+        await api.put(`/families/${form.id}`, payload);
         setMessage({ text: "Family updated successfully!", type: "success" });
       } else {
-        await api.post("/families", form);
+        await api.post("/families", payload);
         setMessage({ text: "Family created successfully!", type: "success" });
       }
-      fetchData();
+      const familiesRes = await api.get("/families");
+      setFamilies(familiesRes.data || []);
       resetForm();
     } catch (err) {
       console.error("Error saving family:", err);
-      setMessage({ text: "Error saving family. Please try again.", type: "error" });
+      setMessage({
+        text: err.response?.data?.message || "Error saving family. Please try again.",
+        type: "error",
+      });
     }
   };
 
-  // Family actions
   const handleEdit = (family) => {
     setForm({
       familyName: family.familyName || "",
+      email: family.email || "",
       discountPercentage: family.discountPercentage || 20,
-      IsEligible: family.IsEligible !== undefined ? family.IsEligible : true,
+      isEligible: family.IsEligible || false,
+      discountChild: family.discountChild?._id || "",
       id: family._id,
     });
   };
@@ -92,26 +102,30 @@ export default function FamiliesManager() {
       try {
         await api.delete(`/families/${id}`);
         setMessage({ text: "Family deleted successfully!", type: "success" });
-        fetchData();
+        const familiesRes = await api.get("/families");
+        setFamilies(familiesRes.data || []);
       } catch (err) {
         console.error("Error deleting family:", err);
-        setMessage({ text: "Error deleting family.", type: "error" });
+        setMessage({ 
+          text: err.response?.data?.message || "Error deleting family.", 
+          type: "error" 
+        });
       }
     }
   };
 
-  // Child management
   const handleAddChild = async (e) => {
     e.preventDefault();
     try {
       await api.post(`/families/${addChildForm.familyId}/children`, {
         studentId: addChildForm.studentId,
       });
-      setModalMessage({ 
-        text: "Child added to family successfully!", 
-        type: "success" 
-      });
+      setModalMessage({ text: "Child added to family successfully!", type: "success" });
       setTimeout(() => {
+        const fetchData = async () => {
+          const familiesRes = await api.get("/families");
+          setFamilies(familiesRes.data || []);
+        };
         fetchData();
         setShowAddChildModal(false);
         setAddChildForm({ familyId: "", studentId: "" });
@@ -119,9 +133,9 @@ export default function FamiliesManager() {
       }, 1500);
     } catch (err) {
       console.error("Error adding child:", err);
-      setModalMessage({ 
-        text: err.response?.data?.message || "Error adding child to family", 
-        type: "error" 
+      setModalMessage({
+        text: err.response?.data?.message || "Error adding child to family",
+        type: "error",
       });
     }
   };
@@ -129,18 +143,14 @@ export default function FamiliesManager() {
   const resetForm = () => {
     setForm({
       familyName: "",
+      email: "",
       discountPercentage: 20,
-      IsEligible: true,
+      isEligible: false,
+      discountChild: "",
       id: null,
     });
   };
 
-  // Student details handlers
-  const handleViewStudent = (student) => {
-    setViewedStudent(student);
-  };
-
-  // Helper function to render children names with view buttons
   const renderChildren = (family) => {
     if (!family.children || family.children.length === 0) {
       return <span className="text-gray-500">No children</span>;
@@ -149,36 +159,34 @@ export default function FamiliesManager() {
     return (
       <div className="space-y-1">
         {family.children.map((student, index) => (
-          <div key={`${student._id || index}`} className="flex items-center justify-between">
-            <span>
-              {student.firstName} {student.lastName}
-            </span>
-            <button
-              onClick={() => handleViewStudent(student)}
+          <div key={student._id || index} className="flex items-center justify-between">
+            <div className="flex items-center">
+              <span>{student.firstName} {student.lastName}</span>
+              {family.discountChild?._id === student._id && (
+                <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                  Discount
+                </span>
+              )}
+            </div>
+            {/* <button
+              onClick={() => setViewedStudent(student)}
               className="text-blue-400 hover:text-blue-600 ml-2"
               title="View student details"
             >
-              {/* <FaEye /> */}
-            </button>
+              <FaEye />
+            </button> */}
           </div>
         ))}
       </div>
     );
   };
 
-  // Filter families safely
-  const filteredFamilies = families.filter((family) => {
-    if (!family || !family.familyName) return false;
-    return family.familyName.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const filteredFamilies = families.filter((family) =>
+    family?.familyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    family?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  if (loading) {
-    return <div className="p-6 text-center">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="p-6 text-center text-red-500">{error}</div>;
-  }
+  if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 min-h-screen">
@@ -198,7 +206,7 @@ export default function FamiliesManager() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Family Name
+            Family Name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -208,6 +216,25 @@ export default function FamiliesManager() {
             className="border p-2 w-full rounded"
             required
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FaEnvelope className="text-gray-400" />
+            </div>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              className="border p-2 w-full rounded pl-10"
+              required
+            />
+          </div>
         </div>
 
         <div>
@@ -229,8 +256,8 @@ export default function FamiliesManager() {
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              name="IsEligible"
-              checked={form.IsEligible}
+              name="isEligible"
+              checked={form.isEligible}
               onChange={handleChange}
             />
             <span className="text-sm font-medium text-gray-700">
@@ -239,12 +266,47 @@ export default function FamiliesManager() {
           </label>
         </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          {form.id ? "Update" : "Create"}
-        </button>
+        {form.isEligible && form.id && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Discount Child
+            </label>
+            <select
+              name="discountChild"
+              value={form.discountChild}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+            >
+              <option value="">Select a child for discount</option>
+              {families
+                .find(f => f._id === form.id)
+                ?.children
+                ?.map(child => (
+                  <option key={child._id} value={child._id}>
+                    {child.firstName} {child.lastName}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
+
+        <div className="flex space-x-3">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            {form.id ? "Update" : "Create"}
+          </button>
+          {form.id && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
       {/* Families Table */}
@@ -253,7 +315,7 @@ export default function FamiliesManager() {
 
         <input
           type="text"
-          placeholder="Search by family name"
+          placeholder="Search by family name or email"
           className="border p-2 w-full mb-4 rounded"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -264,11 +326,12 @@ export default function FamiliesManager() {
             {families.length === 0 ? "No families found" : "No matching families found"}
           </p>
         ) : (
-          <div className="overflow-x-auto max-h-[400px]">
+          <div className="overflow-x-auto max-h-[600px]">
             <table className="w-full table-auto border rounded">
               <thead className="sticky top-0 bg-gray-200 text-gray-700">
                 <tr>
                   <th className="p-2 border">Family Name</th>
+                  <th className="p-2 border">Email</th>
                   <th className="p-2 border">Children</th>
                   <th className="p-2 border">Discount</th>
                   <th className="p-2 border">Status</th>
@@ -279,12 +342,19 @@ export default function FamiliesManager() {
                 {filteredFamilies.map((family) => (
                   <tr key={family._id} className="hover:bg-gray-50">
                     <td className="p-2 border">{family.familyName || "-"}</td>
+                    <td className="p-2 border">{family.email || "-"}</td>
                     <td className="p-2 border max-w-[200px]">
                       {renderChildren(family)}
                     </td>
                     <td className="p-2 border">{family.discountPercentage || 0}%</td>
                     <td className="p-2 border">
-                      {family.IsEligible ? "Eligible" : "Not Eligible"}
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        family.IsEligible 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-gray-100 text-gray-800"
+                      }`}>
+                        {family.IsEligible ? "Eligible" : "Not Eligible"}
+                      </span>
                     </td>
                     <td className="p-2 border space-x-2">
                       <button

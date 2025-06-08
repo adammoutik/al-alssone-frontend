@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -7,22 +8,28 @@ import Button from "../ui/button/Button";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-
-  // 🧪 Pre-filled test credentials
-  const [emailOrUsername, setEmailOrUsername] = useState("testuser");
-  const [password, setPassword] = useState("test1234");
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    // Simulate a successful login
-    localStorage.setItem("token", "fakeToken123"); // Optional: fake token for testing
-  
-    navigate("/"); // Redirect to home
+
+    try {
+      const response = await axios.post("http://localhost:3000/auth/login", {
+        identifier: emailOrUsername,
+        password: password,
+      });
+
+      const token = response.data.access_token;
+      localStorage.setItem("token", token);
+      navigate("/");
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      alert("Échec de la connexion. Vérifiez vos identifiants.");
+    }
   };
-  
 
   return (
     <div className="flex flex-col flex-1">
@@ -32,9 +39,10 @@ export default function SignInForm() {
             Connexion
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Entrez votre Nom d'utilisateur ou email et votre mot de passe pour vous connecter !
+            Entrez votre nom d'utilisateur ou email et votre mot de passe pour vous connecter !
           </p>
         </div>
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-6">
             <div>
@@ -71,7 +79,6 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-
 
             <div className="flex items-center justify-between">
               <Link

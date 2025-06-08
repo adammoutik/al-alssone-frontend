@@ -15,7 +15,7 @@ interface Fee {
 interface Payment {
   _id: string;
   studentId: string;
-  feeId: Fee[]; // Now properly typed as array of Fee objects
+  feeId: Fee[];
   familyId?: string;
   amountPaid: number;
   discountApplied?: boolean;
@@ -30,7 +30,7 @@ interface Payment {
 type FormState = {
   _id: string;
   studentId: string;
-  feeId: string[]; // Store only IDs in form
+  feeId: string[];
   familyId: string;
   amountPaid: string;
   discountApplied: boolean;
@@ -138,6 +138,10 @@ export default function PaymentsDashboard() {
     setForm(prev => ({ ...prev, feeId: selectedValues }));
   };
 
+  const validatePeriod = (period: string): boolean => {
+    return /^\d{4}-\d{2}-\d{2}$/.test(period);
+  };
+
   const validateForm = (): boolean => {
     if (!form.studentId) {
       setMessage({ text: "Student is required", type: "error" });
@@ -147,12 +151,12 @@ export default function PaymentsDashboard() {
       setMessage({ text: "At least one fee must be selected", type: "error" });
       return false;
     }
-    if (!form.amountPaid || isNaN(Number(form.amountPaid))) {
+    if (!form.amountPaid || isNaN(parseFloat(form.amountPaid))) {
       setMessage({ text: "Valid amount is required", type: "error" });
       return false;
     }
-    if (!form.period) {
-      setMessage({ text: "Period is required", type: "error" });
+    if (!form.period || !validatePeriod(form.period)) {
+      setMessage({ text: "Valid period in YYYY-MM-DD format is required", type: "error" });
       return false;
     }
     return true;
@@ -170,22 +174,22 @@ export default function PaymentsDashboard() {
         studentId: form.studentId,
         feeId: form.feeId,
         familyId: form.familyId || undefined,
-        amountPaid: Number(form.amountPaid),
+        amountPaid: parseFloat(form.amountPaid),
         discountApplied: form.discountApplied,
         period: form.period,
         status: form.status.toLowerCase()
       };
 
+      // Clean undefined values
+      const cleanPaymentData = Object.fromEntries(
+        Object.entries(paymentData).filter(([_, v]) => v !== undefined)
+      );
+
       if (form._id) {
-        await api.patch(`/payments/${form._id}`, paymentData, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
+        await api.patch(`/payments/${form._id}`, cleanPaymentData);
         setMessage({ text: "Payment updated successfully", type: "success" });
       } else {
-        await api.post("/payments", paymentData);
+        await api.post("/payments", cleanPaymentData);
         setMessage({ text: "Payment created successfully", type: "success" });
       }
       
@@ -193,9 +197,16 @@ export default function PaymentsDashboard() {
       setForm(initialFormState);
     } catch (err: any) {
       console.error("Error saving payment:", err);
-      const errorMsg = err.response?.data?.message || 
-                      (err.response?.status === 204 ? "Update successful but no content returned" : 
-                      "Error saving payment. Please try again.");
+      let errorMsg = "Error saving payment. Please try again.";
+      
+      if (err.response) {
+        if (err.response.status === 400) {
+          errorMsg = err.response.data.message || "Invalid payment data. Please check your inputs.";
+        } else if (err.response.status === 404) {
+          errorMsg = "Resource not found. Please refresh and try again.";
+        }
+      }
+
       setMessage({ 
         text: errorMsg, 
         type: "error" 
@@ -368,7 +379,7 @@ export default function PaymentsDashboard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Period*</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Period* (YYYY-MM-DD)</label>
             <input
               name="period"
               value={form.period}
@@ -376,6 +387,7 @@ export default function PaymentsDashboard() {
               className="border p-2 w-full rounded"
               required
               placeholder="YYYY-MM-DD"
+              pattern="\d{4}-\d{2}-\d{2}"
             />
           </div>
 
