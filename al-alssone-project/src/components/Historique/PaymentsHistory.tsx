@@ -102,7 +102,7 @@ const PaymentHistory = () => {
           defaultValue="all"
           onChange={(value) => setFilter(value)}
           options={[
-            { label: 'All Payments', value: 'all' },
+            // { label: 'All Payments', value: 'all' },
             { label: 'Active Payments', value: 'active' },
             { label: 'Archived Payments', value: 'archived' },
           ]}
