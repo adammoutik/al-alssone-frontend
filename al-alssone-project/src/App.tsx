@@ -16,6 +16,7 @@ import FeePage from "./pages/fees/FeePage";
 import FamilyPage from './pages/families/FamilyPage';
 import PaymentPage from "./pages/payments/PaymentPage";
 import PaymentsHistory from "./components/Historique/PaymentsHistory";
+import NotificationPage from "./pages/notifications/NotificationPage";
 
 
 export default function App() {
@@ -42,6 +43,9 @@ export default function App() {
 
 
             <Route path="/users" element={<UserPage />} />
+
+            <Route path="/notifications" element={<NotificationPage />} />
+
 
 
 
