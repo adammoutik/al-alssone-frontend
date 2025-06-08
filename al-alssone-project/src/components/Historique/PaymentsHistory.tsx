@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Select } from 'antd';
+import { Table, Select, Button } from 'antd';
 import api from '../../services/axios';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
@@ -54,6 +57,55 @@ const PaymentHistory = () => {
     fetchPayments();
   }, [filter]);
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.text(`Payment History Report (${filter === 'all' ? 'All Payments' : filter === 'active' ? 'Active Payments' : 'Archived Payments'})`, 14, 15);
+    
+    // Prepare data for the table
+    const tableData = payments.map(payment => {
+      const student = students.find(s => s._id === payment.studentId);
+      return [
+        student ? `${student.firstName} ${student.lastName}` : 'Unknown',
+        payment.amountPaid,
+        payment.status.toUpperCase(),
+        payment.period,
+        payment.isArchived ? 'Archived' : 'Active'
+      ];
+    });
+    
+    // Add table
+    doc.autoTable({
+      head: [['Student', 'Amount', 'Status', 'Period', 'Type']],
+      body: tableData,
+      startY: 25,
+      styles: {
+        cellPadding: 2,
+        fontSize: 10,
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 30 },
+        3: { cellWidth: 40 },
+        4: { cellWidth: 30 }
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      }
+    });
+    
+    // Save the PDF
+    doc.save(`payment_history_${filter}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const columns = [
     {
       title: 'Student',
@@ -97,16 +149,19 @@ const PaymentHistory = () => {
     <div>
       <h1>Payment History</h1>
 
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', gap: '16px' }}>
         <Select
           defaultValue="all"
           onChange={(value) => setFilter(value)}
           options={[
-            // { label: 'All Payments', value: 'all' },
+            { label: 'All Payments', value: 'all' },
             { label: 'Active Payments', value: 'active' },
             { label: 'Archived Payments', value: 'archived' },
           ]}
         />
+        <Button type="primary" onClick={handleExportPDF}>
+          Export to PDF
+        </Button>
       </div>
 
       <Table

@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { FaBell, FaTrash } from 'react-icons/fa';
-import { GroupIcon, AlertIcon } from "../../icons";
+// import { GroupIcon, AlertIcon, PaymentIcon } from "../../icons";
 import api from "../../services/axios";
-// import axios from "axios";
+import { GroupIcon } from 'lucide-react';
+import { AlertIcon } from '../../icons';
 
 interface Notification {
   _id: string;
-  title: string;
+  status: 'paid' | 'unpaid' | 'overdue';
   message: string;
-  type: 'info' | 'warning' | 'alert' | 'success';
-  read: boolean;
+  studentName: string;
   createdAt: string;
-  actionUrl?: string;
+  amount?: number;
+}
+
+interface Payment {
+  _id: string;
+  studentName: string;
+  amount?: number;
+  dueDate: string;
+  status: 'paid' | 'unpaid' | 'overdue';
 }
 
 interface DashboardProps {
@@ -23,173 +30,288 @@ const EcommerceMetrics: React.FC<DashboardProps> = ({ username }) => {
     totalStudents: 0,
     unpaidStudents: 0,
     unpaidPayments: 0,
-    upcomingPayments: []
+    totalUnpaidAmount: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const [upcomingPayments, setUpcomingPayments] = useState<Payment[]>([]);
+
+  // Status colors
+  const statusColors = {
+    paid: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    unpaid: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    overdue: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [studentsRes, paymentsRes] = await Promise.all([
+        setError(null);
+        const [studentsRes, paymentsRes, notificationsRes] = await Promise.all([
           api.get('/students'),
-          api.get('/payments?status=unpaid')
+          api.get('/payments'),
+          api.get('/notifications')
         ]);
 
-        const unpaidStudents = studentsRes.data.filter(
-          student => paymentsRes.data.some(payment => payment.studentId === student._id)
-        ).length;
+        const unpaidPayments = paymentsRes.data.filter(p => p.status === 'unpaid');
+        const overduePayments = paymentsRes.data.filter(p => p.status === 'overdue');
+        const totalUnpaidAmount = [...unpaidPayments, ...overduePayments]
+          .reduce((sum, payment) => sum + (payment.amount || 0), 0);
 
         setMetrics({
           totalStudents: studentsRes.data.length,
-          unpaidStudents,
-          unpaidPayments: paymentsRes.data.length,
-          upcomingPayments: paymentsRes.data.slice(0, 5)
+          unpaidStudents: studentsRes.data.filter(
+            student => paymentsRes.data.some(
+              p => p.studentId === student._id && (p.status === 'unpaid' || p.status === 'overdue')
+            )
+          ).length,
+          unpaidPayments: unpaidPayments.length + overduePayments.length,
+          totalUnpaidAmount
         });
-      } catch (err: any) {
-        setError(err.message);
+
+        // Process payments
+        const sortedPayments = [...paymentsRes.data]
+          .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+          .map(payment => ({
+            ...payment,
+            studentName: studentsRes.data.find(s => s._id === payment.studentId)?.name || 'Unknown',
+            amount: payment.amount || 0
+          }));
+
+        setUpcomingPayments(sortedPayments);
+
+        // Process notifications
+        const notificationsWithNames = notificationsRes.data.map(notification => ({
+          ...notification,
+          studentName: studentsRes.data.find(s => s._id === notification.studentId)?.name || 'Unknown',
+          amount: notification.amount || 0
+        }));
+
+        setNotifications(notificationsWithNames.slice(0, 5));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
         console.error('Dashboard data error:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchNotifications = async () => {
-      try {
-        const response = await api.get('/notifications');
-        setNotifications(response.data);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      } finally {
-        setIsLoadingNotifications(false);
-      }
-    };
-
     fetchDashboardData();
-    fetchNotifications();
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const NotificationCenter = () => (
-    <div className="relative">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-full relative hover:bg-gray-200 transition"
-      >
-        <FaBell className="text-gray-600 text-xl" />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {unreadCount}
-          </span>
-        )}
-      </button>
-
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h3 className="font-semibold text-lg dark:text-white">Notifications</h3>
-          </div>
-          <div className="max-h-96 overflow-y-auto">
-            {isLoadingNotifications ? (
-              <div className="p-4 text-center dark:text-gray-300">Loading notifications...</div>
-            ) : notifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">No notifications</div>
-            ) : (
-              <ul>
-                {notifications.map(notification => (
-                  <li 
-                    key={notification._id} 
-                    className={`border-b border-gray-100 dark:border-gray-700 ${
-                      !notification.read ? 'bg-blue-50 dark:bg-gray-700' : 'dark:bg-gray-800'
-                    }`}
-                  >
-                    <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <div className="flex justify-between">
-                        <h4 className="font-medium dark:text-white">{notification.title}</h4>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{notification.message}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          {notifications.length > 0 && (
-            <div className="p-2 border-t border-gray-200 dark:border-gray-700 text-center">
-              <a 
-                href="/notifications" 
-                className="text-sm text-blue-500 hover:underline dark:text-blue-400"
-              >
-                View all notifications
-              </a>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
   if (error) {
-    return <div className="p-4 text-red-500">Error loading dashboard data: {error}</div>;
+    return (
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 rounded-xl max-w-2xl mx-auto mt-8">
+        <h3 className="text-lg font-medium text-red-800 dark:text-red-200">Error loading dashboard</h3>
+        <p className="mt-2 text-red-700 dark:text-red-300">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200 rounded-md hover:bg-red-200 dark:hover:bg-red-700 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
       {/* Header */}
-      <div className="mb-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-black">Dashboard</h1>
-          <p className="text-gray-600 dark:text-black-400">Welcome back, {username}</p>
-        </div>
-        <NotificationCenter />
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {username}</p>
       </div>
 
-      {/* Metrics */}
-      <div className="flex gap-6">
-        {[
-          { label: 'Total Students', value: metrics.totalStudents, icon: <GroupIcon className="text-gray-800 size-6 dark:text-white/90" /> },
-          { label: 'Unpaid Students', value: metrics.unpaidStudents, icon: <AlertIcon className="text-gray-800 size-6 dark:text-white/90" /> },
-          { label: 'Unpaid Payments', value: metrics.unpaidPayments, icon: <AlertIcon className="text-gray-800 size-6 dark:text-white/90" /> },
-        ].map((metric, i) => (
-          <div key={i} className="w-[234px] rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              {metric.icon}
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {/* Total Students */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-100 dark:border-gray-700 p-4 transition-all hover:shadow-sm">
+          <div className="flex items-center">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 dark:bg-gray-700 mr-4">
+              <GroupIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="mt-5">
-              <span className="text-sm text-gray-500 dark:text-black-400">{metric.label}</span>
-              <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-black/90">
-                {loading ? '...' : metric.value}
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
+              <h4 className="text-xl font-semibold text-gray-800 dark:text-white">
+                {loading ? '...' : metrics.totalStudents.toLocaleString()}
               </h4>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Unpaid Students */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-100 dark:border-gray-700 p-4 transition-all hover:shadow-sm">
+          <div className="flex items-center">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 dark:bg-gray-700 mr-4">
+              <AlertIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Unpaid Students</p>
+              <h4 className="text-xl font-semibold text-gray-800 dark:text-white">
+                {loading ? '...' : metrics.unpaidStudents.toLocaleString()}
+              </h4>
+            </div>
+          </div>
+        </div>
+
+        {/* Unpaid Payments */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-100 dark:border-gray-700 p-4 transition-all hover:shadow-sm">
+          <div className="flex items-center">
+             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-50 dark:bg-gray-700 mr-4">
+              <AlertIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Unpaid Payments</p>
+              <h4 className="text-xl font-semibold text-gray-800 dark:text-white">
+                {loading ? '...' : metrics.unpaidPayments.toLocaleString()}
+              </h4>
+             
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Upcoming Payments */}
-      <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 dark:text-black">Upcoming Payments</h3>
-        <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300 max-h-[300px] overflow-y-auto">
-          {loading ? (
-            <div className="text-center py-4">Loading payments...</div>
-          ) : metrics.upcomingPayments.length > 0 ? (
-            metrics.upcomingPayments.map((payment: any) => (
-              <div key={payment._id} className="border-b border-gray-100 pb-3 dark:border-gray-700">
-                <div className="flex justify-between">
-                  <span>{payment.studentName}</span>
-                  <span className="text-gray-500">{new Date(payment.dueDate).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div>No upcoming payments.</div>
-          )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Upcoming Payments */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Payment Overview</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">All upcoming and overdue payments</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Student
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Due Date
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Loading payments...
+                      </td>
+                    </tr>
+                  ) : upcomingPayments.length > 0 ? (
+                    upcomingPayments.map((payment) => (
+                      <tr 
+                        key={payment._id} 
+                        className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                                {payment.studentName.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-gray-800 dark:text-white">
+                                {payment.studentName}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">
+                          ${payment.amount.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-800 dark:text-white">
+                            {new Date(payment.dueDate).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(payment.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 text-xs rounded-full font-medium ${statusColors[payment.status]}`}>
+                            {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
+                        No payments found
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Notifications */}
+        <div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xs border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Recent Alerts</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Latest payment notifications</p>
+            </div>
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+              {loading ? (
+                <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading notifications...</div>
+              ) : notifications.length === 0 ? (
+                <div className="p-4 text-center text-gray-500 dark:text-gray-400">No notifications</div>
+              ) : (
+                notifications.map(notification => (
+                  <div 
+                    key={notification._id} 
+                    className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      notification.status === 'overdue' ? 'bg-red-50/50 dark:bg-red-900/20' : 
+                      notification.status === 'unpaid' ? 'bg-yellow-50/50 dark:bg-yellow-900/20' : ''
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className={`flex-shrink-0 mt-1 w-2 h-2 rounded-full ${
+                        statusColors[notification.status]
+                      }`}></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <p className="text-sm font-medium text-gray-800 dark:text-white">
+                            {notification.studentName}
+                          </p>
+                          {notification.amount > 0 && (
+                            <span className="text-xs font-medium px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                              ${notification.amount.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          {notification.message}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            statusColors[notification.status]
+                          }`}>
+                            {notification.status.charAt(0).toUpperCase() + notification.status.slice(1)}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(notification.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
