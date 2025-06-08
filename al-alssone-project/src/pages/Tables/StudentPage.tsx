@@ -1,5 +1,5 @@
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import StudentsSection from "../../components/students/StudentsSection";
+import StudentsList from "../../components/students/StudentsList";
 
 export default function StudentPage() {
   return (
@@ -7,7 +7,7 @@ export default function StudentPage() {
       
       <PageBreadcrumb pageTitle="" />
       <div className="space-y-6">
-          <StudentsSection />
+          <StudentsList />
       </div>
     </>
   );

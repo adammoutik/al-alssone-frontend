@@ -18,7 +18,10 @@ import PaymentPage from "./pages/payments/PaymentPage";
 import PaymentsHistory from "./components/Historique/PaymentsHistory";
 import NotificationPage from "./pages/notifications/NotificationPage";
 import UserProfile from "./components/UserProfile/UserProfile";
-import PaymentDetails from "./components/Historique/PaymentDetails";
+import StudentsList from "./components/students/StudentsList";
+import StudentForm from "./components/students/StudentForm";
+import CreateStudentPage from "./components/students/StudentForm";
+import StudentsListPage from "./components/students/StudentsList";
 
 
 export default function App() {
@@ -34,6 +37,8 @@ export default function App() {
             <Route path="/fees" element={<FeePage />} />
 
             <Route path="/students" element={<StudentPage />} />
+        <Route path="/students/create" element={<CreateStudentPage />} />
+        <Route path="/students" element={<StudentsListPage />} />
 
             <Route path="/families" element={<FamilyPage />} />
 
@@ -42,7 +47,6 @@ export default function App() {
 
              <Route path="/Historique" element={<PaymentsHistory />} />
 
-              <Route path="/payments/:id" element={<PaymentDetails />} />
 
 
 
