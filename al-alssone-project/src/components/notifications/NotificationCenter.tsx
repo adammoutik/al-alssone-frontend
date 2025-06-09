@@ -16,9 +16,15 @@ interface Notification {
   type: 'info' | 'warning' | 'alert' | 'success';
   read: boolean;
   createdAt: string;
+  scheduledFor?: string;
   actionUrl?: string;
   studentId?: string;
   status?: string;
+  payment?: {
+    status?: string;
+    studentFirstName?: string;
+    studentLastName?: string;
+  };
 }
 
 const NotificationCenter: React.FC = () => {
@@ -96,32 +102,6 @@ const NotificationCenter: React.FC = () => {
       default: return 'ℹ️';
     }
   };
-
-  const handleFilterChange = (newFilter: 'all' | 'unread') => {
-    setFilter(newFilter);
-    setPage(1);
-  };
-
-  const markAsRead = async (id: string) => {
-    try {
-      await api.patch(`/notifications/${id}/read`);
-      setNotifications(prev => 
-        prev.map(n => n._id === id ? { ...n, read: true } : n)
-      );
-    } catch (err) {
-      console.error('Error marking notification as read:', err);
-    }
-  };
-
-  const deleteNotification = async (id: string) => {
-    try {
-      await api.delete(`/notifications/${id}`);
-      setNotifications(prev => prev.filter(n => n._id !== id));
-    } catch (err) {
-      console.error('Error deleting notification:', err);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <div className="flex justify-between items-center mb-6">
@@ -139,22 +119,9 @@ const NotificationCenter: React.FC = () => {
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-4">
-          {/* <div className="flex items-center space-x-2">
-            <FaFilter />
-            <select
-              value={filter}
-              onChange={(e) => handleFilterChange(e.target.value as 'all' | 'unread')}
-              className="border rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-white"
-            >
-              <option value="all">All</option>
-              <option value="unread">Unread</option>
-            </select>
-          </div> */}
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {notifications.filter(n => !n.read).length} unread
-          </div>
+          {/* Filter controls would go here */}
         </div>
-
+        
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {isLoading && page === 1 ? (
             <div className="p-8 text-center">
@@ -178,11 +145,18 @@ const NotificationCenter: React.FC = () => {
           ) : (
             notifications.map(notification => {
               const student = notification.studentId ? students[notification.studentId] : null;
+              const studentName = student 
+                ? `${student.firstName} ${student.lastName}`
+                : notification.payment 
+                  ? `${notification.payment.studentFirstName} ${notification.payment.studentLastName}`
+                  : null;
 
               return (
                 <div
                   key={notification._id}
-                  className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 ${!notification.read ? 'bg-blue-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'}`}
+                  className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    !notification.read ? 'bg-blue-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'
+                  }`}
                 >
                   <div className="flex items-start">
                     <div className="mr-3 text-lg">
@@ -190,9 +164,26 @@ const NotificationCenter: React.FC = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
-                        <h3 className={`text-sm font-medium ${!notification.read ? 'text-blue-600 dark:text-blue-400' : 'text-gray-800 dark:text-gray-200'}`}>
-                          {notification.title}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className={`text-sm font-medium ${
+                            !notification.read 
+                              ? 'text-blue-600 dark:text-blue-400' 
+                              : 'text-gray-800 dark:text-gray-200'
+                          }`}>
+                            {notification.title}
+                          </h3>
+                          {notification.status && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              notification.status === 'paid' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                              notification.status === 'overdue' 
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200'
+                            }`}>
+                              {notification.status}
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-gray-500 dark:text-gray-400">
                             {new Date(notification.createdAt).toLocaleDateString()}
@@ -207,53 +198,25 @@ const NotificationCenter: React.FC = () => {
                       </div>
 
                       {/* Student Information */}
-                      {student && (
+                      {studentName && (
                         <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                          Student: <span className="font-semibold">{student.firstName} {student.lastName}</span>
+                          Student: <span className="font-semibold">{studentName}</span>
                         </div>
                       )}
 
-                      {/* Status Information */}
-                      {notification.status && (
+                      {/* Scheduled Time */}
+                      {notification.scheduledFor && (
                         <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                          Status: <span className="font-medium">{notification.status}</span>
+                          Scheduled: {new Date(notification.scheduledFor).toLocaleString()}
                         </div>
                       )}
 
                       {/* Notification Message */}
-                      <p className={`mt-1 text-sm text-gray-600 dark:text-gray-300 ${
+                      <p className={`mt-2 text-sm text-gray-600 dark:text-gray-300 ${
                         expandedNotifications[notification._id] ? '' : 'line-clamp-2'
                       }`}>
                         {notification.message}
                       </p>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center mt-2 space-x-3">
-                        {/* {!notification.read && (
-                          <button
-                            onClick={() => markAsRead(notification._id)}
-                            className="flex items-center text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
-                          >
-                            <FaCheck className="mr-1" /> Mark as read
-                          </button>
-                        )} */}
-                        {/* <button
-                          onClick={() => deleteNotification(notification._id)}
-                          className="flex items-center text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                        >
-                          <FaTrash className="mr-1" /> Delete
-                        </button> */}
-                        {/* {notification.actionUrl && (
-                          <a
-                            href={notification.actionUrl}
-                            className="text-xs text-blue-500 hover:underline dark:text-blue-400"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View details
-                          </a>
-                        )} */}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -261,7 +224,6 @@ const NotificationCenter: React.FC = () => {
             })
           )}
 
-          {/* Load More Button */}
           {hasMore && !isLoading && (
             <div className="p-4 text-center">
               <button
