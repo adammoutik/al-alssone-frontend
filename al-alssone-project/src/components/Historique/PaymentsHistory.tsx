@@ -144,10 +144,10 @@ const PaymentHistory = () => {
       sorter: (a, b) => a.status.localeCompare(b.status)
     },
     {
-      title: 'Period',
-      dataIndex: 'period',
-      key: 'period',
-      sorter: (a, b) => a.period.localeCompare(b.period)
+      title: 'Creation Date',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      sorter: (a, b) => a.createdAt.localeCompare(b.createdAt)
     },
     {
       title: 'Type',
