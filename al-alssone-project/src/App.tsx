@@ -22,6 +22,8 @@ import StudentsList from "./components/students/StudentsList";
 import StudentForm from "./components/students/StudentForm";
 import CreateStudentPage from "./components/students/StudentForm";
 import StudentsListPage from "./components/students/StudentsList";
+import AcceuilPage from "./pages/acceuil/AcceuilPage";
+import Acceuil from "./components/acceuil/acceuil";
 
 
 export default function App() {
@@ -53,11 +55,11 @@ export default function App() {
 
             <Route path="/users" element={<UserPage />} />
 
-             <Route path="/UserProfile" element={<UserProfile />} />
 
 
 
             <Route path="/notifications" element={<NotificationPage />} />
+
 
 
 
@@ -74,6 +76,8 @@ export default function App() {
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
+          <Route path="/acceuil" element={<Acceuil />} />
+
 
         </Routes>
       </Router>
