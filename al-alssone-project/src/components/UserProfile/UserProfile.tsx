@@ -1,21 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../services/axios";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
 import { FiEdit2, FiSave, FiX } from "react-icons/fi";
 
 export default function UserProfile() {
+  // Replace this with how you get the current logged-in user ID in your app
+  const userId = "current-user-id";
+
   const [user, setUser] = useState({
-    email: "user@example.com",
-    username: "username123",
-    phoneNumber: "0612345678",
-    firstName: "Khaoula",
-    lastName: "Benali",
+    email: "",
+    username: "",
+    phoneNumber: "",
+    firstName: "",
+    lastName: "",
     password: "",
   });
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [tempUser, setTempUser] = useState(user);
+
+  // Fetch user info on mount
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await api.get(`/users/${userId}`);
+        setUser(res.data);
+        setTempUser(res.data);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    }
+    fetchUser();
+  }, [userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -31,13 +49,23 @@ export default function UserProfile() {
     setIsEditing(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUser(tempUser);
-    setIsEditing(false);
-    console.log("Sending data:", tempUser);
-    // TODO: Call backend API here
-    alert("Profil mis à jour !");
+
+    try {
+      const dataToSend = { ...tempUser };
+      if (!dataToSend.password) {
+        delete dataToSend.password; // don’t update password if empty
+      }
+
+      const res = await axios.patch(`/users/${userId}`, dataToSend);
+      setUser(res.data);
+      setIsEditing(false);
+      alert("Profil mis à jour !");
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      alert("Erreur lors de la mise à jour du profil");
+    }
   };
 
   return (
@@ -45,17 +73,22 @@ export default function UserProfile() {
       <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Mon Profil</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Mon Profil
+            </h2>
             <p className="text-gray-600 dark:text-gray-300">
-              {isEditing ? "Modifiez vos informations" : "Consultez vos informations personnelles"}
+              {isEditing
+                ? "Modifiez vos informations"
+                : "Consultez vos informations personnelles"}
             </p>
           </div>
-          
+
           <div className="flex items-center">
             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl mr-4">
-              {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+              {user.firstName?.charAt(0)}
+              {user.lastName?.charAt(0)}
             </div>
-            
+
             {!isEditing ? (
               <button
                 onClick={handleEditClick}

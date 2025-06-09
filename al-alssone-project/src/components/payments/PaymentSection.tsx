@@ -16,10 +16,8 @@ interface Payment {
   _id: string;
   studentId: string;
   feeId: Fee[];
-  familyId?: string;
   amountPaid: number;
   discountApplied?: boolean;
-  period: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -31,10 +29,7 @@ type FormState = {
   _id: string;
   studentId: string;
   feeId: string[];
-  familyId: string;
-  amountPaid: string;
   discountApplied: boolean;
-  period: string;
   status: string;
 };
 
@@ -42,10 +37,7 @@ const initialFormState: FormState = {
   _id: "",
   studentId: "",
   feeId: [],
-  familyId: "",
-  amountPaid: "",
   discountApplied: false,
-  period: "",
   status: 'unpaid'
 };
 
@@ -127,19 +119,21 @@ export default function PaymentsDashboard() {
     }));
   };
 
-  const handleMultiSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const options = e.target.options;
-    const selectedValues: string[] = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selectedValues.push(options[i].value);
+  const handleFeeSelection = (feeId: string, isChecked: boolean) => {
+    setForm(prev => {
+      if (isChecked) {
+        return { ...prev, feeId: [...prev.feeId, feeId] };
+      } else {
+        return { ...prev, feeId: prev.feeId.filter(id => id !== feeId) };
       }
-    }
-    setForm(prev => ({ ...prev, feeId: selectedValues }));
+    });
   };
 
-  const validatePeriod = (period: string): boolean => {
-    return /^\d{4}-\d{2}-\d{2}$/.test(period);
+  const calculateTotalAmount = () => {
+    return form.feeId.reduce((total, feeId) => {
+      const fee = fees.find(f => f._id === feeId);
+      return total + (fee ? fee.amount : 0);
+    }, 0);
   };
 
   const validateForm = (): boolean => {
@@ -149,14 +143,6 @@ export default function PaymentsDashboard() {
     }
     if (form.feeId.length === 0) {
       setMessage({ text: "At least one fee must be selected", type: "error" });
-      return false;
-    }
-    if (!form.amountPaid || isNaN(parseFloat(form.amountPaid))) {
-      setMessage({ text: "Valid amount is required", type: "error" });
-      return false;
-    }
-    if (!form.period || !validatePeriod(form.period)) {
-      setMessage({ text: "Valid period in YYYY-MM-DD format is required", type: "error" });
       return false;
     }
     return true;
@@ -170,26 +156,21 @@ export default function PaymentsDashboard() {
     setMessage({ text: "", type: "" });
 
     try {
+      const totalAmount = calculateTotalAmount();
+      
       const paymentData = {
         studentId: form.studentId,
         feeId: form.feeId,
-        familyId: form.familyId || undefined,
-        amountPaid: parseFloat(form.amountPaid),
+        amountPaid: form.discountApplied ? totalAmount * 0.9 : totalAmount, // 10% discount if applied
         discountApplied: form.discountApplied,
-        period: form.period,
         status: form.status.toLowerCase()
       };
 
-      // Clean undefined values
-      const cleanPaymentData = Object.fromEntries(
-        Object.entries(paymentData).filter(([_, v]) => v !== undefined)
-      );
-
       if (form._id) {
-        await api.patch(`/payments/${form._id}`, cleanPaymentData);
+        await api.patch(`/payments/${form._id}`, paymentData);
         setMessage({ text: "Payment updated successfully", type: "success" });
       } else {
-        await api.post("/payments", cleanPaymentData);
+        await api.post("/payments", paymentData);
         setMessage({ text: "Payment created successfully", type: "success" });
       }
       
@@ -233,10 +214,7 @@ export default function PaymentsDashboard() {
       _id: payment._id,
       studentId: payment.studentId,
       feeId: payment.feeId.map(fee => fee._id),
-      familyId: payment.familyId || "",
-      amountPaid: payment.amountPaid.toString(),
       discountApplied: payment.discountApplied || false,
-      period: payment.period,
       status: payment.status
     });
     setMessage({ text: "", type: "" });
@@ -265,7 +243,6 @@ export default function PaymentsDashboard() {
     const searchContent = [
       payment.studentName?.toLowerCase() || "",
       payment.amountPaid?.toString() || "",
-      payment.period?.toLowerCase() || "",
       payment.status?.toLowerCase() || "",
       payment.feeId.map(f => f.type).join(" ") || ""
     ].join(" ");
@@ -323,47 +300,31 @@ export default function PaymentsDashboard() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fees*</label>
-            <select
-              name="feeId"
-              multiple
-              value={form.feeId}
-              onChange={handleMultiSelect}
-              className="border p-2 w-full rounded h-auto min-h-[42px]"
-              required
-              size={3}
-            >
+            <div className="space-y-2 max-h-60 overflow-y-auto p-2 border rounded">
               {fees.map(fee => (
-                <option key={fee._id} value={fee._id}>
-                  {fee.type} ({fee.category}) - {fee.amount} MAD
-                </option>
+                <div key={fee._id} className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id={`fee-${fee._id}`}
+                    checked={form.feeId.includes(fee._id)}
+                    onChange={(e) => handleFeeSelection(fee._id, e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor={`fee-${fee._id}`} className="flex-1">
+                    {fee.type} ({fee.category}) - {fee.amount} MAD
+                  </label>
+                </div>
               ))}
-            </select>
-            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Family ID (optional)</label>
-            <input
-              name="familyId"
-              value={form.familyId}
-              onChange={handleChange}
-              className="border p-2 w-full rounded"
-              placeholder="Family ID"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid*</label>
-            <input
-              name="amountPaid"
-              type="number"
-              value={form.amountPaid}
-              onChange={handleChange}
-              className="border p-2 w-full rounded"
-              required
-              min="0"
-              step="0.01"
-            />
+          <div className="bg-gray-50 p-3 rounded">
+            <p className="font-medium">Total Amount: {calculateTotalAmount()} MAD</p>
+            {form.discountApplied && (
+              <p className="text-green-600">
+                After 10% discount: {calculateTotalAmount() * 0.9} MAD
+              </p>
+            )}
           </div>
 
           <div>
@@ -374,21 +335,8 @@ export default function PaymentsDashboard() {
                 checked={form.discountApplied}
                 onChange={handleChange}
               />
-              <span>Discount Applied</span>
+              <span>Apply 10% Discount</span>
             </label>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Period* (YYYY-MM-DD)</label>
-            <input
-              name="period"
-              value={form.period}
-              onChange={handleChange}
-              className="border p-2 w-full rounded"
-              required
-              placeholder="YYYY-MM-DD"
-              pattern="\d{4}-\d{2}-\d{2}"
-            />
           </div>
 
           <div>
@@ -456,7 +404,6 @@ export default function PaymentsDashboard() {
                 <tr>
                   <th className="p-2 text-left">Student</th>
                   <th className="p-2 text-left">Amount</th>
-                  <th className="p-2 text-left">Period</th>
                   <th className="p-2 text-left">Status</th>
                   <th className="p-2 text-left">Actions</th>
                 </tr>
@@ -466,7 +413,6 @@ export default function PaymentsDashboard() {
                   <tr key={payment._id} className="border-t hover:bg-gray-50">
                     <td className="p-2">{payment.studentName}</td>
                     <td className="p-2">{payment.amountPaid} MAD</td>
-                    <td className="p-2">{payment.period}</td>
                     <td className="p-2 capitalize">
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         payment.status.toLowerCase() === 'paid' 
@@ -532,10 +478,8 @@ export default function PaymentsDashboard() {
                   </ul>
                 </div>
 
-                {viewedPayment.familyId && <p><strong>Family ID:</strong> {viewedPayment.familyId}</p>}
                 <p><strong>Amount Paid:</strong> {viewedPayment.amountPaid} MAD</p>
                 <p><strong>Discount Applied:</strong> {viewedPayment.discountApplied ? "Yes" : "No"}</p>
-                <p><strong>Period:</strong> {viewedPayment.period}</p>
                 <p><strong>Status:</strong> 
                   <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
                     viewedPayment.status.toLowerCase() === 'paid' 

@@ -144,7 +144,7 @@ export default function UserSection() {
       };
 
       if (form._id) {
-        await api.put(`/users/${form._id}`, userData);
+        await api.patch(`/users/${form._id}`, userData);
         setMessage({ text: "User updated successfully", type: "success" });
       } else {
         await api.post("/users/create", userData);
