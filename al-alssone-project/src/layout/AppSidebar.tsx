@@ -3,12 +3,9 @@ import { Link, useLocation } from "react-router";
 import { LogOut } from "lucide-react";
 
 // Assume these icons are imported from an icon library
-import {
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  UserCircleIcon,
-} from "../icons";
+import { Grid, User, DollarSign, Users, CreditCard, Clock } from 'react-feather';
+
+
 import { useSidebar } from "../context/SidebarContext";
 
 type NavItem = {
@@ -20,43 +17,42 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
-    name: "Dashboard", path: "/",
+    icon: <Grid />,
+    name: "Dashboard",
+    path: "/",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <CreditCard />,
     name: "Fees Management",
     path: "/fees",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <User />,
     name: "Students",
     path: "/students",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <Users />,
     name: "Families",
     path: "/families",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <DollarSign />,
     name: "Payments",
     path: "/payments",
   },
-   {
-    icon: <UserCircleIcon />,
+  {
+    icon: <Clock />,
     name: "Payments History",
     path: "/Historique",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <User />,
     name: "Users",
     path: "/users",
   },
-  
-
- 
 ];
+
 
 const othersItems: NavItem[] = [
 
