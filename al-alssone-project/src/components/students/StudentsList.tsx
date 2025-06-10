@@ -19,8 +19,8 @@ export default function StudentsListPage() {
       const response = await api.get("/students");
       setStudents(response.data);
     } catch (error) {
-      console.error("Erreur lors de la récupération des étudiants :", error);
-      setMessage("Une erreur est survenue lors de la récupération des étudiants.");
+      console.error("Erreur lors de la récupération des élèves :", error);
+      setMessage("Une erreur est survenue lors de la récupération des élèves.");
     }
   };
 
@@ -29,13 +29,13 @@ export default function StudentsListPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet étudiant ?")) {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet élève ?")) {
       try {
         await api.delete(`/students/${id}`);
         fetchStudents();
         setMessage("Étudiant supprimé avec succès.");
       } catch (error) {
-        console.error("Erreur lors de la suppression de l'étudiant :", error);
+        console.error("Erreur lors de la suppression de l'élève :", error);
         setMessage("Échec de la suppression de l'étudiant.");
       }
     }
@@ -106,7 +106,7 @@ export default function StudentsListPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Liste des étudiants</h1>
+        <h1 className="text-2xl font-bold">Liste des élèves</h1>
         <div className="flex space-x-3">
           <button
             onClick={generatePDF}
@@ -119,7 +119,7 @@ export default function StudentsListPage() {
             to="/students/create"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Créer un nouvel étudiant
+            Créer un nouvel élève
           </Link>
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function StudentsListPage() {
         <table className="w-full table-auto border">
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-3 text-left">Code Étudiant</th>
+              <th className="p-3 text-left">Code élève</th>
               <th className="p-3 text-left">Nom</th>
               <th className="p-3 text-left">Niveau</th>
               <th className="p-3 text-left">Catégorie</th>
@@ -221,11 +221,11 @@ export default function StudentsListPage() {
       {viewedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Détails de l'étudiant</h3>
+            <h3 className="text-xl font-bold mb-4">Détails de l'élève</h3>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <p className="font-semibold">Code Étudiant :</p>
+                <p className="font-semibold">Code élève :</p>
                 <p>{viewedStudent.studentCode || "N/A"}</p>
               </div>
               <div>

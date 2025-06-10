@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <User />,
-    name: "Etudiants",
+    name: "Élèves",
     path: "/students",
   },
   {

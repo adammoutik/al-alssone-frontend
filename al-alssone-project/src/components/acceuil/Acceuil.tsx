@@ -107,7 +107,7 @@ export default function Accueil() {
                   className="flex items-center space-x-2 bg-pink-100 text-blue-600 font-semibold rounded-lg px-5 py-3 hover:bg-pink-200 focus:ring-4 focus:ring-pink-300 focus:outline-none shadow-md transition duration-300"
                 >
                   <FontAwesomeIcon icon={faUser} />
-                  <span>Accès Étudiant</span>
+                  <span>Accès élève</span>
                 </button>
               </>
             ) : (

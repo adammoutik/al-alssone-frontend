@@ -201,7 +201,7 @@ export default function EcommerceMetrics() {
                 <AlertIcon className="text-gray-800 size-6 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-black-400">Étudiants Impayés</span>
+                <span className="text-sm text-gray-500 dark:text-black-400">élèves Impayés</span>
                 {loading.metrics ? (
                   <div className="h-6 w-16 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 ) : error.metrics ? (
@@ -244,7 +244,7 @@ export default function EcommerceMetrics() {
             <table className="w-full table-auto border-collapse border border-gray-300 text-left text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
               <thead>
                 <tr className="bg-gray-100 text-gray-800 dark:bg-black/20 dark:text-black/70">
-                  <th className="border border-gray-300 p-3">Nom Étudiant</th>
+                  <th className="border border-gray-300 p-3">Nom élève</th>
                   <th className="border border-gray-300 p-3">Montant payé</th>
                   <th className="border border-gray-300 p-3">Statut</th>
                 </tr>

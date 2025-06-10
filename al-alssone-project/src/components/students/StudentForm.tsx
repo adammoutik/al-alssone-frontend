@@ -41,7 +41,7 @@ export default function CreerEtudiantPage() {
       };
 
       await api.post("/students", donneesAEnvoyer);
-      setMessage("Étudiant créé avec succès !");
+      setMessage("élève créé avec succès !");
       
       // Redirection vers la liste des étudiants après 1.5 secondes
       setTimeout(() => {
@@ -58,7 +58,7 @@ export default function CreerEtudiantPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Créer un nouvel étudiant</h1>
+      <h1 className="text-2xl font-bold mb-6">Créer un nouvel élève</h1>
       
       {message && <p className="text-sm text-blue-600 mb-4">{message}</p>}
 
@@ -197,7 +197,7 @@ export default function CreerEtudiantPage() {
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
             disabled={chargement}
           >
-            {chargement ? "Traitement..." : "Créer l'étudiant"}
+            {chargement ? "Traitement..." : "Créer l'élève"}
           </button>
         </div>
       </form>
