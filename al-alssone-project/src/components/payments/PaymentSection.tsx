@@ -322,7 +322,7 @@ export default function PaymentsDashboard() {
             <p className="font-medium">Total Amount: {calculateTotalAmount()} MAD</p>
             {form.discountApplied && (
               <p className="text-green-600">
-                After 10% discount: {calculateTotalAmount() * 0.9} MAD
+                After 20% discount: {calculateTotalAmount() * 0.8} MAD
               </p>
             )}
           </div>
@@ -335,7 +335,7 @@ export default function PaymentsDashboard() {
                 checked={form.discountApplied}
                 onChange={handleChange}
               />
-              <span>Apply 10% Discount</span>
+              <span>Apply 20% Discount</span>
             </label>
           </div>
 

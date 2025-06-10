@@ -24,6 +24,7 @@ import CreateStudentPage from "./components/students/StudentForm";
 import StudentsListPage from "./components/students/StudentsList";
 import AcceuilPage from "./pages/acceuil/AcceuilPage";
 import Acceuil from "./components/acceuil/acceuil";
+import StudentPaymentsPage from "./components/students/StudentPaymentsPage";
 
 
 export default function App() {
@@ -77,6 +78,8 @@ export default function App() {
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
           <Route path="/acceuil" element={<Acceuil />} />
+          <Route path="/public/student/payments/:studentCode" element={<StudentPaymentsPage />} />
+
 
 
         </Routes>

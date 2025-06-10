@@ -2,25 +2,25 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/axios";
 
-export default function CreateStudentPage() {
+export default function CreerEtudiantPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    birthDate: "",
-    category: "maternelle",
+    prenom: "",
+    nom: "",
+    dateDeNaissance: "",
+    categorie: "maternelle",
     niveau: "TPS",
-    familyId: "",
+    familleId: "",
     isGarde: false,
-    usesTransport: false,
-    registrationDate: "",
-    parentPhoneNumber: "",
-    isActive: true,
+    utiliseTransport: false,
+    dateInscription: "",
+    telephoneParent: "",
+    estActif: true,
   });
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [chargement, setChargement] = useState(false);
 
-  const handleChange = (e) => {
+  const gererChangement = (e) => {
     const { name, value, type, checked } = e.target;
     setForm(prev => ({ 
       ...prev, 
@@ -28,83 +28,82 @@ export default function CreateStudentPage() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const gererSoumission = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setChargement(true);
     setMessage("");
 
     try {
-      const dataToSend = {
+      const donneesAEnvoyer = {
         ...form,
-        birthDate: new Date(form.birthDate),
-        registrationDate: new Date(form.registrationDate),
+        dateDeNaissance: new Date(form.dateDeNaissance),
+        dateInscription: new Date(form.dateInscription),
       };
 
-      await api.post("/students", dataToSend);
-      setMessage("Student created successfully!");
+      await api.post("/students", donneesAEnvoyer);
+      setMessage("Étudiant créé avec succès !");
       
-      // Redirect to students list after 1.5 seconds
+      // Redirection vers la liste des étudiants après 1.5 secondes
       setTimeout(() => {
         navigate("/students");
       }, 1500);
       
     } catch (error) {
-      console.error("Error submitting student:", error);
-      setMessage("An error occurred. Please try again.");
+      console.error("Erreur lors de la soumission :", error);
+      setMessage("Une erreur est survenue. Veuillez réessayer.");
     } finally {
-      setLoading(false);
+      setChargement(false);
     }
   };
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create New Student</h1>
+      <h1 className="text-2xl font-bold mb-6">Créer un nouvel étudiant</h1>
       
       {message && <p className="text-sm text-blue-600 mb-4">{message}</p>}
 
-      <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white">
-        {/* Keep all your existing form fields exactly as they are */}
+      <form onSubmit={gererSoumission} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
             <input
-              name="firstName"
-              value={form.firstName}
-              onChange={handleChange}
+              name="prenom"
+              value={form.prenom}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
             <input
-              name="lastName"
-              value={form.lastName}
-              onChange={handleChange}
+              name="nom"
+              value={form.nom}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
             <input
-              name="birthDate"
+              name="dateDeNaissance"
               type="date"
-              value={form.birthDate}
-              onChange={handleChange}
+              value={form.dateDeNaissance}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
             <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
+              name="categorie"
+              value={form.categorie}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
             >
               <option value="maternelle">Maternelle</option>
@@ -113,14 +112,14 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
             <select
               name="niveau"
               value={form.niveau}
-              onChange={handleChange}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
             >
-              {form.category === "maternelle" ? (
+              {form.categorie === "maternelle" ? (
                 <>
                   <option value="TPS">TPS</option>
                   <option value="PS">PS</option>
@@ -139,23 +138,23 @@ export default function CreateStudentPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date d'inscription</label>
             <input
-              name="registrationDate"
+              name="dateInscription"
               type="date"
-              value={form.registrationDate}
-              onChange={handleChange}
+              value={form.dateInscription}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone du parent</label>
             <input
-              name="parentPhoneNumber"
-              value={form.parentPhoneNumber}
-              onChange={handleChange}
+              name="telephoneParent"
+              value={form.telephoneParent}
+              onChange={gererChangement}
               className="border p-2 w-full rounded"
               required
             />
@@ -167,38 +166,38 @@ export default function CreateStudentPage() {
                 type="checkbox"
                 name="isGarde"
                 checked={form.isGarde}
-                onChange={handleChange}
+                onChange={gererChangement}
               />
-              <span>After-School Care</span>
+              <span>Garderie après l'école</span>
             </label>
             
             <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                name="usesTransport"
-                checked={form.usesTransport}
-                onChange={handleChange}
+                name="utiliseTransport"
+                checked={form.utiliseTransport}
+                onChange={gererChangement}
               />
-              <span>Uses Transport</span>
+              <span>Utilise le transport</span>
             </label>
             
             <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                name="isActive"
-                checked={form.isActive}
-                onChange={handleChange}
+                name="estActif"
+                checked={form.estActif}
+                onChange={gererChangement}
               />
-              <span>Active</span>
+              <span>Actif</span>
             </label>
           </div>
 
           <button
             type="submit"
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-            disabled={loading}
+            disabled={chargement}
           >
-            {loading ? "Processing..." : "Create Student"}
+            {chargement ? "Traitement..." : "Créer l'étudiant"}
           </button>
         </div>
       </form>

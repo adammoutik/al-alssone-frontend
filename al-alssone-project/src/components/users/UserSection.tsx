@@ -36,7 +36,7 @@ const initialFormState: FormState = {
 };
 
 export default function UserSection() {
-  // State management
+  // Gestion de l'état
   const [users, setUsers] = useState<User[]>([]);
   const [form, setForm] = useState<FormState>(initialFormState);
   const [viewedUser, setViewedUser] = useState<User | null>(null);
@@ -45,24 +45,24 @@ export default function UserSection() {
   const [loading, setLoading] = useState({ table: false, form: false });
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch users with enhanced error handling
+  // Récupérer les utilisateurs avec gestion d'erreur améliorée
   const fetchUsers = useCallback(async () => {
     try {
-      console.log("[DEBUG] Starting user fetch...");
+      console.log("[DEBUG] Démarrage de la récupération des utilisateurs...");
       setLoading(prev => ({ ...prev, table: true }));
       setError(null);
       
       const response = await api.get("/users");
-      console.log("[DEBUG] API Response:", response);
+      console.log("[DEBUG] Réponse API :", response);
       
       if (!response.data) {
-        console.error("[ERROR] No data received in response");
-        throw new Error("No user data received from server");
+        console.error("[ERREUR] Aucune donnée reçue dans la réponse");
+        throw new Error("Aucune donnée utilisateur reçue du serveur");
       }
       
       if (!Array.isArray(response.data)) {
-        console.error("[ERROR] Data is not an array:", response.data);
-        throw new Error("Server returned invalid data format");
+        console.error("[ERREUR] Les données ne sont pas un tableau :", response.data);
+        throw new Error("Le serveur a retourné un format de données invalide");
       }
 
       const processedUsers = response.data.map(user => ({
@@ -76,16 +76,16 @@ export default function UserSection() {
         createdAt: user.createdAt
       }));
 
-      console.log("[DEBUG] Processed users:", processedUsers);
+      console.log("[DEBUG] Utilisateurs traités :", processedUsers);
       setUsers(processedUsers);
       
     } catch (err: any) {
-      console.error("[ERROR] Failed to fetch users:", {
+      console.error("[ERREUR] Échec de la récupération des utilisateurs :", {
         message: err.message,
         response: err.response,
         stack: err.stack
       });
-      setError(err.response?.data?.message || "Failed to load users. Please try again.");
+      setError(err.response?.data?.message || "Échec du chargement des utilisateurs. Veuillez réessayer.");
       setUsers([]);
     } finally {
       setLoading(prev => ({ ...prev, table: false }));
@@ -96,7 +96,7 @@ export default function UserSection() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Form handlers
+  // Gestionnaires du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ 
@@ -107,19 +107,19 @@ export default function UserSection() {
 
   const validateForm = (): boolean => {
     if (!form.username.trim()) {
-      setMessage({ text: "Username is required", type: "error" });
+      setMessage({ text: "Le nom d'utilisateur est obligatoire", type: "error" });
       return false;
     }
     if (!form.email.trim()) {
-      setMessage({ text: "Email is required", type: "error" });
+      setMessage({ text: "L'email est obligatoire", type: "error" });
       return false;
     }
     if (!form._id && !form.password.trim()) {
-      setMessage({ text: "Password is required for new users", type: "error" });
+      setMessage({ text: "Le mot de passe est obligatoire pour les nouveaux utilisateurs", type: "error" });
       return false;
     }
     if (form.phoneNumber && form.phoneNumber.length < 10) {
-      setMessage({ text: "Phone number must be at least 10 digits", type: "error" });
+      setMessage({ text: "Le numéro de téléphone doit contenir au moins 10 chiffres", type: "error" });
       return false;
     }
     return true;
@@ -145,18 +145,18 @@ export default function UserSection() {
 
       if (form._id) {
         await api.patch(`/users/${form._id}`, userData);
-        setMessage({ text: "User updated successfully", type: "success" });
+        setMessage({ text: "Utilisateur mis à jour avec succès", type: "success" });
       } else {
         await api.post("/users/create", userData);
-        setMessage({ text: "User created successfully", type: "success" });
+        setMessage({ text: "Utilisateur créé avec succès", type: "success" });
       }
       
       await fetchUsers();
       setForm(initialFormState);
     } catch (err: any) {
-      console.error("[ERROR] Failed to save user:", err);
+      console.error("[ERREUR] Échec de la sauvegarde de l'utilisateur :", err);
       setMessage({ 
-        text: err.response?.data?.message || "Error saving user. Please try again.", 
+        text: err.response?.data?.message || "Erreur lors de la sauvegarde de l'utilisateur. Veuillez réessayer.", 
         type: "error" 
       });
     } finally {
@@ -164,7 +164,7 @@ export default function UserSection() {
     }
   };
 
-  // User actions
+  // Actions utilisateur
   const handleViewUser = (user: User) => {
     setViewedUser({
       _id: user._id,
@@ -193,17 +193,17 @@ export default function UserSection() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) return;
     
     try {
       setLoading(prev => ({ ...prev, table: true }));
       await api.delete(`/users/${id}`);
-      setMessage({ text: "User deleted successfully", type: "success" });
+      setMessage({ text: "Utilisateur supprimé avec succès", type: "success" });
       await fetchUsers();
     } catch (err: any) {
-      console.error("[ERROR] Failed to delete user:", err);
+      console.error("[ERREUR] Échec de la suppression de l'utilisateur :", err);
       setMessage({ 
-        text: err.response?.data?.message || "Failed to delete user", 
+        text: err.response?.data?.message || "Échec de la suppression de l'utilisateur", 
         type: "error" 
       });
     } finally {
@@ -211,7 +211,7 @@ export default function UserSection() {
     }
   };
 
-  // Filter users with search term
+  // Filtrer les utilisateurs avec le terme de recherche
   const filteredUsers = React.useMemo(() => {
     return users.filter(user => {
       const searchContent = [
@@ -228,10 +228,10 @@ export default function UserSection() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 min-h-screen">
-      {/* Form Section */}
+      {/* Section Formulaire */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form._id ? "Update User" : "Create User"}
+          {form._id ? "Mettre à jour l'utilisateur" : "Créer un utilisateur"}
         </h2>
 
         {message.text && (
@@ -244,7 +244,7 @@ export default function UserSection() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username*</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nom d'utilisateur*</label>
             <input
               name="username"
               value={form.username}
@@ -258,8 +258,8 @@ export default function UserSection() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
             <input
-              name="email"
               type="email"
+              name="email"
               value={form.email}
               onChange={handleChange}
               className="border p-2 w-full rounded"
@@ -269,196 +269,177 @@ export default function UserSection() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {form._id ? "New Password (leave blank to keep)" : "Password*"}
+              Mot de passe{form._id ? " (laisser vide pour ne pas changer)" : "*"}
             </label>
             <input
-              name="password"
               type="password"
+              name="password"
               value={form.password}
               onChange={handleChange}
               className="border p-2 w-full rounded"
+              minLength={form._id ? 0 : 6}
               required={!form._id}
-              minLength={6}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name*</label>
-              <input
-                name="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                className="border p-2 w-full rounded"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name*</label>
-              <input
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                className="border p-2 w-full rounded"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <input
-              name="phoneNumber"
-              type="tel"
-              value={form.phoneNumber}
-              onChange={handleChange}
-              className="border p-2 w-full rounded"
-              pattern="[0-9]*"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role*</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rôle*</label>
             <select
               name="role"
               value={form.role}
               onChange={handleChange}
               className="border p-2 w-full rounded"
-              required
             >
               <option value="assistant">Assistant</option>
               <option value="admin">Admin</option>
             </select>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading.form}
-            className={`w-full p-3 rounded-md mt-4 ${
-              loading.form 
-                ? "bg-gray-400 cursor-not-allowed" 
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {loading.form ? "Processing..." : form._id ? "Update User" : "Create User"}
-          </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Numéro de téléphone</label>
+            <input
+              name="phoneNumber"
+              value={form.phoneNumber}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+              maxLength={15}
+              pattern="\d*"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+            <input
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nom de famille</label>
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              className="border p-2 w-full rounded"
+            />
+          </div>
         </div>
+
+        <button
+          type="submit"
+          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
+          disabled={loading.form}
+        >
+          {loading.form ? "Traitement..." : (form._id ? "Mettre à jour" : "Créer")}
+        </button>
+
+    
       </form>
 
-      {/* Users Table Section */}
-      <div className="p-6 border rounded-2xl shadow-xl bg-white">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Users List</h2>
-          <button 
-            onClick={fetchUsers}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            disabled={loading.table}
-          >
-            <FaSync className={loading.table ? "animate-spin" : ""} />
-            Refresh
-          </button>
-        </div>
-        
-        <div className="mb-4">
+      {/* Section Table des utilisateurs */}
+      <section className="p-6 border rounded-2xl shadow-xl bg-white">
+        <h2 className="text-2xl font-bold mb-4">Utilisateurs</h2>
+
+        <div className="mb-4 flex gap-2">
           <input
             type="text"
-            placeholder="Search users..."
-            className="border p-2 w-full rounded"
+            placeholder="Rechercher..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="border p-2 rounded flex-grow"
           />
+          <button
+            onClick={fetchUsers}
+            disabled={loading.table}
+            className="bg-green-600 px-4 py-2 rounded text-white hover:bg-green-700 disabled:bg-green-300 flex items-center gap-2"
+            title="Actualiser la liste"
+          >
+            <FaSync />
+          </button>
         </div>
 
-        {error ? (
-          <div className="text-center text-red-500 p-4">
-            {error}
-            <button 
-              onClick={fetchUsers}
-              className="ml-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        {loading.table && <p>Chargement des utilisateurs...</p>}
+        {error && <p className="text-red-600">{error}</p>}
+
+        <div className="overflow-x-auto max-h-[600px]">
+          <table className="min-w-full table-auto border-collapse border border-gray-300 text-left">
+            <thead>
+              <tr className="bg-gray-100 sticky top-0">
+                <th className="border border-gray-300 px-4 py-2">Nom d'utilisateur</th>
+                <th className="border border-gray-300 px-4 py-2">Email</th>
+                <th className="border border-gray-300 px-4 py-2">Rôle</th>
+                <th className="border border-gray-300 px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length === 0 && !loading.table && (
+                <tr>
+                  <td colSpan={5} className="text-center p-4 text-gray-500">
+                    Aucun utilisateur trouvé.
+                  </td>
+                </tr>
+              )}
+
+              {filteredUsers.map(user => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-4 py-2">{user.username}</td>
+                  <td className="border border-gray-300 px-4 py-2">{user.email}</td>
+                  <td className="border border-gray-300 px-4 py-2 capitalize">{user.role}</td>
+                  <td className="border border-gray-300 px-4 py-2 flex gap-2">
+                    <button
+                      onClick={() => handleViewUser(user)}
+                      className="text-blue-600 hover:text-blue-800"
+                      title="Voir"
+                    >
+                      <FaEye />
+                    </button>
+
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="text-green-600 hover:text-green-800"
+                      title="Modifier"
+                    >
+                      <FaEdit />
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(user._id)}
+                      className="text-red-600 hover:text-red-800"
+                      title="Supprimer"
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Affichage détaillé de l'utilisateur */}
+        {viewedUser && (
+          <div className="mt-6 p-4 border rounded bg-gray-50">
+            <h3 className="text-xl font-semibold mb-2">Détails de l'utilisateur</h3>
+            <p><strong>Nom d'utilisateur:</strong> {viewedUser.username}</p>
+            <p><strong>Email:</strong> {viewedUser.email}</p>
+            <p><strong>Rôle:</strong> {viewedUser.role}</p>
+            <p><strong>Téléphone:</strong> {viewedUser.phoneNumber}</p>
+            <p><strong>Prénom:</strong> {viewedUser.firstName}</p>
+            <p><strong>Nom de famille:</strong> {viewedUser.lastName}</p>
+            <p><strong>Créé le:</strong> {viewedUser.createdAt ? new Date(viewedUser.createdAt).toLocaleString() : "N/A"}</p>
+
+            <button
+              className="mt-3 underline text-blue-600 hover:text-blue-800"
+              onClick={() => setViewedUser(null)}
             >
-              Retry
+              Fermer
             </button>
           </div>
-        ) : loading.table ? (
-          <div className="text-center py-4">Loading users...</div>
-        ) : filteredUsers.length === 0 ? (
-          <div className="text-center py-4 text-gray-500">
-            {searchTerm ? "No matching users found" : "No users available"}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border rounded">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Email</th>
-                  <th className="p-2 text-left">Role</th>
-                  <th className="p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user._id} className="border-t hover:bg-gray-50">
-                    <td className="p-2">{user.firstName} {user.lastName}</td>
-                    <td className="p-2">{user.email}</td>
-                    <td className="p-2 capitalize">{user.role}</td>
-                    <td className="p-2 flex space-x-2">
-                      <button
-                        onClick={() => handleViewUser(user)}
-                        className="text-blue-500 hover:text-blue-700 p-1"
-                        title="View"
-                      >
-                        <FaEye />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="text-yellow-500 hover:text-yellow-700 p-1"
-                        title="Edit"
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user._id)}
-                        className="text-red-500 hover:text-red-700 p-1"
-                        title="Delete"
-                      >
-                        <FaTrashAlt />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         )}
-      </div>
-
-      {/* View Modal */}
-      {viewedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">User Details</h3>
-            <div className="space-y-2">
-              <p><strong>Name:</strong> {viewedUser.firstName} {viewedUser.lastName}</p>
-              <p><strong>Username:</strong> {viewedUser.username}</p>
-              <p><strong>Email:</strong> {viewedUser.email}</p>
-              <p><strong>Phone:</strong> {viewedUser.phoneNumber}</p>
-              <p><strong>Role:</strong> {viewedUser.role}</p>
-              {viewedUser.createdAt && (
-                <p><strong>Created:</strong> {new Date(viewedUser.createdAt).toLocaleString()}</p>
-              )}
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setViewedUser(null)}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </section>
     </div>
   );
 }

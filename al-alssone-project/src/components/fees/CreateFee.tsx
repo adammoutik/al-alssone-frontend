@@ -1,133 +1,133 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/axios";
-import { FaEye, FaEdit, FaTrashAlt } from "react-icons/fa"; // Importing icons
+import { FaEye, FaEdit, FaTrashAlt } from "react-icons/fa"; // Import des icônes
 
-export default function FeesDashboard() {
-  const [fees, setFees] = useState([]);
-  const [form, setForm] = useState({
-    type: "registration",
-    category: "maternelle",
+export default function TableauFrais() {
+  const [frais, setFrais] = useState([]);
+  const [formulaire, setFormulaire] = useState({
+    type: "inscription",
+    categorie: "maternelle",
     description: "",
-    amount: "",
-    isActive: true,
-    frequency: "Monthly",
+    montant: "",
+    estActif: true,
+    frequence: "Mensuel",
     id: null,
   });
-  const [viewedFee, setViewedFee] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [fraisVue, setFraisVue] = useState(null);
+  const [termeRecherche, setTermeRecherche] = useState("");
   const [message, setMessage] = useState("");
 
-  const fetchFees = async () => {
+  const recupererFrais = async () => {
     try {
-      const response = await api.get("/fees");
-      setFees(response.data);
+      const reponse = await api.get("/fees");
+      setFrais(reponse.data);
     } catch (error) {
-      console.error("Error fetching fees:", error);
+      console.error("Erreur lors de la récupération des frais :", error);
     }
   };
 
   useEffect(() => {
-    fetchFees();
+    recupererFrais();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type: inputType, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: inputType === "checkbox" ? checked : value,
+  const gererChangement = (e) => {
+    const { name, value, type: typeInput, checked } = e.target;
+    setFormulaire({
+      ...formulaire,
+      [name]: typeInput === "checkbox" ? checked : value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const gererSoumission = async (e) => {
     e.preventDefault();
     setMessage("");
 
-    const dataToSend = {
-      ...form,
-      amount: Number(form.amount),
+    const donneesAEnvoyer = {
+      ...formulaire,
+      montant: Number(formulaire.montant),
     };
 
     try {
-      if (form.id !== null) {
-        await api.put(`/fees/${form.id}`, dataToSend);
-        setMessage("Fee updated successfully.");
+      if (formulaire.id !== null) {
+        await api.put(`/fees/${formulaire.id}`, donneesAEnvoyer);
+        setMessage("Frais mis à jour avec succès.");
       } else {
-        await api.post("/fees", dataToSend);
-        setMessage("Fee created successfully.");
+        await api.post("/fees", donneesAEnvoyer);
+        setMessage("Frais créés avec succès.");
       }
 
-      fetchFees();
-      setForm({
-        type: "registration",
-        category: "maternelle",
+      recupererFrais();
+      setFormulaire({
+        type: "inscription",
+        categorie: "maternelle",
         description: "",
-        amount: "",
-        isActive: true,
-        frequency: "Monthly",
+        montant: "",
+        estActif: true,
+        frequence: "Mensuel",
         id: null,
       });
     } catch (error) {
-      console.error("Error submitting fee:", error);
-      setMessage("An error occurred. Please try again.");
+      console.error("Erreur lors de la soumission des frais :", error);
+      setMessage("Une erreur est survenue. Veuillez réessayer.");
     }
   };
 
-  const handleEdit = (fee) => {
-    setForm({
+  const gererEdition = (fee) => {
+    setFormulaire({
       ...fee,
-      id: fee._id, // 👈 Ensure MongoDB _id is used
+      id: fee._id, // 👈 Utiliser l'id MongoDB
     });
     setMessage("");
   };
 
-  const handleDelete = async (id) => {
+  const gererSuppression = async (id) => {
     try {
       await api.delete(`/fees/${id}`);
-      fetchFees();
-      setMessage("Fee deleted successfully.");
+      recupererFrais();
+      setMessage("Frais supprimés avec succès.");
     } catch (error) {
-      console.error("Error deleting fee:", error);
-      setMessage("Failed to delete fee.");
+      console.error("Erreur lors de la suppression des frais :", error);
+      setMessage("Échec de la suppression des frais.");
     }
   };
 
-  const filteredFees = fees.filter((fee) =>
+  const fraisFiltres = frais.filter((fee) =>
     [fee.type, fee.category]
-      .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
+      .some((champ) => champ?.toLowerCase().includes(termeRecherche.toLowerCase()))
   );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 min-h-screen">
-      {/* Form Section */}
-      <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
+      {/* Section formulaire */}
+      <form onSubmit={gererSoumission} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form.id ? "Update Fee" : "Create Fee"}
+          {formulaire.id ? "Modifier un frais" : "Créer un frais"}
         </h2>
 
         {message && <p className="text-sm text-blue-600">{message}</p>}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type de frais</label>
           <select
             name="type"
-            value={form.type}
-            onChange={handleChange}
+            value={formulaire.type}
+            onChange={gererChangement}
             className="border p-2 w-full rounded"
           >
-            <option value="registration">Registration</option>
-            <option value="insurance">Insurance</option>
-            <option value="childcare">Childcare</option>
-            <option value="education">Education</option>
+            <option value="inscription">Inscription</option>
+            <option value="assurance">Assurance</option>
+            <option value="garde">Garde d'enfants</option>
+            <option value="education">Éducation</option>
             <option value="transport">Transport</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fee Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie de frais</label>
           <select
-            name="category"
-            value={form.category}
-            onChange={handleChange}
+            name="categorie"
+            value={formulaire.categorie}
+            onChange={gererChangement}
             className="border p-2 w-full rounded"
           >
             <option value="maternelle">Maternelle</option>
@@ -139,35 +139,35 @@ export default function FeesDashboard() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
             name="description"
-            value={form.description}
-            onChange={handleChange}
+            value={formulaire.description}
+            onChange={gererChangement}
             className="border p-2 w-full rounded"
-            placeholder="Short description"
+            placeholder="Brève description"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount (MAD)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Montant (MAD)</label>
           <input
-            name="amount"
+            name="montant"
             type="number"
-            value={form.amount}
-            onChange={handleChange}
+            value={formulaire.montant}
+            onChange={gererChangement}
             className="border p-2 w-full rounded"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Is Active?</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Actif ?</label>
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              name="isActive"
-              checked={form.isActive}
-              onChange={handleChange}
+              name="estActif"
+              checked={formulaire.estActif}
+              onChange={gererChangement}
             />
-            <span>Yes</span>
+            <span>Oui</span>
           </label>
         </div>
 
@@ -175,20 +175,20 @@ export default function FeesDashboard() {
           type="submit"
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          {form.id ? "Update" : "Create"}
+          {formulaire.id ? "Modifier" : "Créer"}
         </button>
       </form>
 
-      {/* Fees Table */}
+      {/* Tableau des frais */}
       <div className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Fees List</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Liste des frais</h2>
 
         <input
           type="text"
-          placeholder="Search by type or category"
+          placeholder="Rechercher par type ou catégorie"
           className="border p-2 w-full mb-4 rounded"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={termeRecherche}
+          onChange={(e) => setTermeRecherche(e.target.value)}
         />
 
         <div className="overflow-x-auto max-h-[400px]">
@@ -196,14 +196,14 @@ export default function FeesDashboard() {
             <thead className="sticky top-0 bg-gray-200 text-gray-700">
               <tr>
                 <th className="p-2 border">Type</th>
-                <th className="p-2 border">Category</th>
-                <th className="p-2 border">Amount</th>
-                <th className="p-2 border">Status</th>
+                <th className="p-2 border">Catégorie</th>
+                <th className="p-2 border">Montant</th>
+                <th className="p-2 border">Statut</th>
                 <th className="p-2 border">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredFees.map((fee) => (
+              {fraisFiltres.map((fee) => (
                 <tr
                   key={fee._id}
                   className={!fee.isActive ? "bg-gray-100 text-gray-400" : "hover:bg-gray-50"}
@@ -211,22 +211,22 @@ export default function FeesDashboard() {
                   <td className="p-2 border capitalize">{fee.type}</td>
                   <td className="p-2 border capitalize">{fee.category}</td>
                   <td className="p-2 border">{fee.amount}</td>
-                  <td className="p-2 border">{fee.isActive ? "Active" : "Inactive"}</td>
+                  <td className="p-2 border">{fee.isActive ? "Actif" : "Inactif"}</td>
                   <td className="p-2 border space-x-2">
                     <button
-                      onClick={() => setViewedFee(fee)}
+                      onClick={() => setFraisVue(fee)}
                       className="text-green-400 hover:text-green-800 transition"
                     >
                       <FaEye className="inline-block mr-1" /> 
                     </button>
                     <button
-                      onClick={() => handleEdit(fee)}
+                      onClick={() => gererEdition(fee)}
                       className="text-blue-400 hover:text-blue-800 transition"
                     >
                       <FaEdit className="inline-block mr-1" /> 
                     </button>
                     <button
-                      onClick={() => handleDelete(fee._id)}
+                      onClick={() => gererSuppression(fee._id)}
                       className="text-red-400 hover:text-red-800 transition"
                     >
                       <FaTrashAlt className="inline-block mr-1" /> 
@@ -239,24 +239,24 @@ export default function FeesDashboard() {
         </div>
       </div>
 
-      {/* View Modal */}
-      {viewedFee && (
+      {/* Modal de visualisation */}
+      {fraisVue && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Fee Details</h3>
-            <p><strong>Type:</strong> {viewedFee.type}</p>
-            <p><strong>Category:</strong> {viewedFee.category}</p>
-            <p><strong>Description:</strong> {viewedFee.description || "N/A"}</p>
-            <p><strong>Amount:</strong> {viewedFee.amount} MAD</p>
-            <p><strong>Status:</strong> {viewedFee.isActive ? "Active" : "Inactive"}</p>
-            {viewedFee.frequency && <p><strong>Frequency:</strong> {viewedFee.frequency}</p>}
+            <h3 className="text-xl font-bold mb-4">Détails du frais</h3>
+            <p><strong>Type :</strong> {fraisVue.type}</p>
+            <p><strong>Catégorie :</strong> {fraisVue.category}</p>
+            <p><strong>Description :</strong> {fraisVue.description || "N/A"}</p>
+            <p><strong>Montant :</strong> {fraisVue.amount} MAD</p>
+            <p><strong>Statut :</strong> {fraisVue.isActive ? "Actif" : "Inactif"}</p>
+            {fraisVue.frequency && <p><strong>Fréquence :</strong> {fraisVue.frequency}</p>}
 
             <div className="mt-4 flex justify-end">
               <button
-                onClick={() => setViewedFee(null)}
+                onClick={() => setFraisVue(null)}
                 className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
               >
-                Close
+                Fermer
               </button>
             </div>
           </div>

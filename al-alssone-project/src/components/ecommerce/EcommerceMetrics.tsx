@@ -121,11 +121,11 @@ export default function EcommerceMetrics() {
 
     switch (status) {
       case "paid":
-        return <span className={`${baseClasses} bg-green-100 text-green-800`}>Paid</span>;
+        return <span className={`${baseClasses} bg-green-100 text-green-800`}>Payé</span>;
       case "overdue":
-        return <span className={`${baseClasses} bg-red-100 text-red-800`}>Overdue</span>;
+        return <span className={`${baseClasses} bg-red-100 text-red-800`}>En retard</span>;
       default:
-        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Unpaid</span>;
+        return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Non payé</span>;
     }
   }
 
@@ -150,11 +150,11 @@ export default function EcommerceMetrics() {
 
   switch (status) {
     case "sent":
-      return <span className={`${baseClasses} bg-green-100 text-green-800`}>Sent</span>;
+      return <span className={`${baseClasses} bg-green-100 text-green-800`}>Envoyé</span>;
     case "failed":
-      return <span className={`${baseClasses} bg-red-100 text-red-800`}>Failed</span>;
+      return <span className={`${baseClasses} bg-red-100 text-red-800`}>Échec</span>;
     default:
-      return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>Pending</span>;
+      return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>En attente</span>;
   }
 }
 
@@ -168,8 +168,8 @@ export default function EcommerceMetrics() {
     <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-black">Dashboard</h1>
-        <p className="text-gray-600 dark:text-black-400">Welcome back</p>
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-black">Tableau de bord</h1>
+        <p className="text-gray-600 dark:text-black-400">Bon retour </p>
       </div>
 
       {/* Main Layout */}
@@ -184,11 +184,11 @@ export default function EcommerceMetrics() {
                 <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-black-400">Total Students</span>
+                <span className="text-sm text-gray-500 dark:text-black-400">Total Étudiants</span>
                 {loading.metrics ? (
                   <div className="h-6 w-16 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 ) : error.metrics ? (
-                  <span className="text-red-500 text-sm">Error</span>
+                  <span className="text-red-500 text-sm">Erreur</span>
                 ) : (
                   <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-black/90">{metrics.totalStudents}</h4>
                 )}
@@ -201,11 +201,11 @@ export default function EcommerceMetrics() {
                 <AlertIcon className="text-gray-800 size-6 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-black-400">Unpaid Students</span>
+                <span className="text-sm text-gray-500 dark:text-black-400">Étudiants Impayés</span>
                 {loading.metrics ? (
                   <div className="h-6 w-16 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 ) : error.metrics ? (
-                  <span className="text-red-500 text-sm">Error</span>
+                  <span className="text-red-500 text-sm">Erreur</span>
                 ) : (
                   <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-black/90">{metrics.unpaidStudents}</h4>
                 )}
@@ -218,11 +218,11 @@ export default function EcommerceMetrics() {
                 <AlertIcon className="text-gray-800 size-6 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-black-400">Unpaid Payments</span>
+                <span className="text-sm text-gray-500 dark:text-black-400">Paiements Impayés</span>
                 {loading.metrics ? (
                   <div className="h-6 w-16 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 ) : error.metrics ? (
-                  <span className="text-red-500 text-sm">Error</span>
+                  <span className="text-red-500 text-sm">Erreur</span>
                 ) : (
                   <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-black/90">{metrics.unpaidStudents}</h4>
                 )}
@@ -233,20 +233,20 @@ export default function EcommerceMetrics() {
           {/* Upcoming Payments Table */}
           <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-white/[0.03]">
             <div className="flex justify-between items-center px-5 py-3 border-b border-gray-300 dark:border-gray-700">
-              <h4 className="font-semibold text-gray-700 dark:text-gray-300"> Payments</h4>
+              <h4 className="font-semibold text-gray-700 dark:text-gray-300"> Paiements</h4>
               <button
                 onClick={() => navigate("/payments")}
                 className="text-blue-600 hover:underline text-sm font-medium"
               >
-                View All
+               Voir tout
               </button>
             </div>
             <table className="w-full table-auto border-collapse border border-gray-300 text-left text-sm text-gray-600 dark:border-gray-700 dark:text-gray-300">
               <thead>
                 <tr className="bg-gray-100 text-gray-800 dark:bg-black/20 dark:text-black/70">
-                  <th className="border border-gray-300 p-3">Student</th>
-                  <th className="border border-gray-300 p-3">Amount Paid</th>
-                  <th className="border border-gray-300 p-3">Status</th>
+                  <th className="border border-gray-300 p-3">Nom Étudiant</th>
+                  <th className="border border-gray-300 p-3">Montant payé</th>
+                  <th className="border border-gray-300 p-3">Statut</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,12 +277,12 @@ export default function EcommerceMetrics() {
               {/* Right Column - Alerts */}
           {/* Right Column - Recent Alerts */}
         <div className="w-[400px] h-[380px] flex-shrink-0 rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-white/[0.03]">
-          <h2 className="text-lg font-semibold p-5 text-gray-800 dark:text-black/90">Recent Alerts</h2>
+          <h2 className="text-lg font-semibold p-5 text-gray-800 dark:text-black/90">Notifications récentes</h2>
 
           {loading.alerts ? (
-            <div className="p-5 animate-pulse text-gray-500">Loading alerts...</div>
+            <div className="p-5 animate-pulse text-gray-500">Loading ...</div>
           ) : error.alerts ? (
-            <div className="p-5 text-red-500">Failed to load alerts.</div>
+            <div className="p-5 text-red-500">Impossible de charger les notifications</div>
           ) : (
             <>
               <ul className="divide-y divide-gray-200 dark:divide-white/10 max-h-[400px] overflow-y-auto">
@@ -315,7 +315,7 @@ export default function EcommerceMetrics() {
                     className="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
                     onClick={() => navigate("/notifications")}
                   >
-                    View All
+                    Voir tout
                   </button>
                 </div>
               )}
