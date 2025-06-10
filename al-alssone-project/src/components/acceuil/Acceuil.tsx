@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faLock, faUser, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faLock, faUser, faSpinner, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../public/images/logo/logo.png';
 import api from '../../services/axios';
 import { toast } from 'react-toastify';
@@ -45,7 +45,6 @@ export default function Accueil() {
     setError('');
 
     try {
-      // Call your backend directly (no external IP fetch)
       const response = await api.get(`/public/student/payments/${studentCode}`);
 
       if (response.data && response.data.length > 0) {
@@ -72,27 +71,27 @@ export default function Accueil() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-pink-500 via-blue-600 to-blue-900 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-white-900 via-white-700 to-blue-600 flex flex-col">
       {/* Header */}
-      <header className="bg-white bg-opacity-20 backdrop-blur-md shadow-md py-5 px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <header className="bg-white/20 backdrop-blur-lg shadow-lg py-4 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <img
               src={logo}
               alt="Logo Al Aissens Scolaire Privé"
-              className="h-16 w-auto object-contain"
+              className="h-14 w-auto object-contain"
             />
-            <div className="hidden md:block border-l border-[#4299e1] h-12"></div>
+            <div className="hidden md:block border-l border-blue-300 h-10"></div>
           </div>
 
           {/* Buttons or guest input */}
-          <div className="flex items-center space-x-6">
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
             {!showGuestInput ? (
-              <>
+              <div className="flex flex-col sm:flex-row gap-3 w-full justify-center md:justify-end">
                 <button
                   onClick={() => navigate('/signin')}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-400 focus:outline-none text-white font-semibold rounded-lg px-5 py-3 transition duration-300 shadow-md"
+                  className="flex items-center justify-center space-x-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 focus:outline-none text-white font-medium rounded-lg px-5 py-2.5 transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto"
                 >
                   <FontAwesomeIcon icon={faLock} />
                   <span>Connexion Admin</span>
@@ -104,76 +103,93 @@ export default function Accueil() {
                     setError('');
                     setStudentCode('');
                   }}
-                  className="flex items-center space-x-2 bg-pink-100 text-blue-600 font-semibold rounded-lg px-5 py-3 hover:bg-pink-200 focus:ring-4 focus:ring-pink-300 focus:outline-none shadow-md transition duration-300"
+                  className="flex items-center justify-center space-x-2 bg-white/90 hover:bg-white text-blue-700 font-medium rounded-lg px-5 py-2.5 hover:shadow-lg focus:ring-4 focus:ring-blue-200 focus:outline-none shadow-md transition-all duration-300 w-full sm:w-auto"
                 >
                   <FontAwesomeIcon icon={faUser} />
                   <span>Accès élève</span>
                 </button>
-              </>
+              </div>
             ) : (
-              <form
-                onSubmit={handleGuestSubmit}
-                className="flex items-center space-x-3 bg-white rounded-lg shadow-lg px-4 py-2"
-              >
-                <input
-                  type="text"
-                  placeholder="Entrez le code étudiant"
-                  value={studentCode}
-                  onChange={(e) => setStudentCode(e.target.value)}
-                  className="text-blue-900 font-medium placeholder-blue-400 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition duration-200 w-56"
-                  autoFocus
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-5 py-3 flex items-center space-x-1 shadow-md transition duration-300 disabled:opacity-50"
-                  disabled={isLoading}
+              <div className="w-full max-w-lg">
+                <form
+                  onSubmit={handleGuestSubmit}
+                  className="flex flex-col sm:flex-row items-center gap-3 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4"
                 >
-                  {isLoading ? (
-                    <>
-                      <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
-                      <span>Vérification...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Voir</span>
-                      <FontAwesomeIcon icon={faArrowRight} />
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGuestInput(false)}
-                  className="text-blue-600 hover:text-blue-800 font-semibold underline focus:outline-none"
-                  disabled={isLoading}
-                >
-                  Annuler
-                </button>
-              </form>
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      placeholder="Entrez le code étudiant"
+                      value={studentCode}
+                      onChange={(e) => setStudentCode(e.target.value)}
+                      className="text-blue-900 font-medium placeholder-blue-400 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 w-full border border-blue-200"
+                      autoFocus
+                      disabled={isLoading}
+                    />
+                    <div className="absolute right-3 top-3.5 text-blue-400">
+                      <FontAwesomeIcon icon={faInfoCircle} title="Votre code étudiant vous a été fourni par l'administration" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      type="submit"
+                      className="bg-blue-700 hover:bg-blue-800 text-white rounded-lg px-5 py-3 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 w-full sm:w-auto"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                          <span>Vérification...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Voir</span>
+                          <FontAwesomeIcon icon={faArrowRight} />
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowGuestInput(false)}
+                      className="text-blue-700 hover:text-blue-900 font-medium rounded-lg px-4 py-3 hover:bg-blue-50 focus:outline-none transition-all duration-200 w-full sm:w-auto"
+                      disabled={isLoading}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
+                {error && (
+                  <p className="mt-2 text-center text-red-300 font-medium text-sm px-4 animate-fade-in">
+                    {error}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
-        {error && (
-          <p className="max-w-7xl mx-auto mt-2 text-center text-red-400 font-semibold text-sm px-8">
-            {error}
-          </p>
-        )}
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col items-center justify-center px-6 text-center max-w-4xl mx-auto">
-        <h2 className="text-5xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg">
-          Bienvenue dans le Portail de Paiement
-        </h2>
-        <p className="text-lg text-blue-200 max-w-xl leading-relaxed select-none">
-          Système sécurisé de gestion des paiements scolaires de l'établissement Al Aissens
-        </p>
-      </main>
+     <main
+  className="flex-grow w-full bg-cover bg-center flex items-center justify-center px-24 text-center"
+  style={{ backgroundImage: "url('/images/logo/background.jpg')" }}
+>
+<div className="bg-pink-100 bg-opacity-90 p-10 rounded-xl mr-auto">
+    <h2 className="text-5xl font-extrabold text-blue-900 mb-6 leading-tight drop-shadow-lg">
+         Bienvenue dans l'application de gestion
+             </h2>
+           <h2 className="text-5xl font-extrabold text-blue-900 mb-6 leading-tight drop-shadow-lg">
+         
+          des paiements de l'école Al Alssone.    </h2>
+   
+  </div>
+</main>
+
 
       {/* Footer */}
-      <footer className="bg-white bg-opacity-20 backdrop-blur-md py-6 px-6 mt-12">
-        <div className="max-w-7xl mx-auto text-center text-blue-500 text-sm select-none">
-          <p>© {new Date().getFullYear()} Établissement Al Aissens Scolaire Privé. Tous droits réservés.</p>
+      <footer className="bg-white/20 backdrop-blur-lg py-5 px-6">
+        <div className="max-w-7xl mx-auto text-center text-blue-100 text-sm">
+          <p>© {new Date().getFullYear()} Établissement Al Alssone Scolaire Privé. Tous droits réservés.</p>
+          <p className="mt-1 text-xs opacity-80">Version 1.0.0</p>
         </div>
       </footer>
     </div>
