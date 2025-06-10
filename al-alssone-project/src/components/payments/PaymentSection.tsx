@@ -457,7 +457,7 @@ export default function PaymentsDashboard() {
       {viewedPayment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">Payment Details</h3>
+            <h3 className="text-xl font-bold mb-4"> Details du paiement</h3>
             {loading.details ? (
               <div className="text-center py-4">Loading details...</div>
             ) : (
@@ -470,9 +470,9 @@ export default function PaymentsDashboard() {
                     {viewedPayment.feeId.map((fee, index) => (
                       <li key={index} className="py-1">
                         <p><strong>Type:</strong> {fee.type}</p>
-                        <p><strong>Category:</strong> {fee.category}</p>
-                        <p><strong>Amount:</strong> {fee.amount} MAD</p>
-                        <p><strong>Frequency:</strong> {fee.frequency}</p>
+                        <p><strong>Categorie:</strong> {fee.category}</p>
+                        <p><strong>Montant:</strong> {fee.amount} MAD</p>
+                        <p><strong>Frequence:</strong> {fee.frequency}</p>
                       </li>
                     ))}
                   </ul>
@@ -499,7 +499,7 @@ export default function PaymentsDashboard() {
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                 disabled={loading.details}
               >
-                Close
+                Fermer
               </button>
             </div>
           </div>

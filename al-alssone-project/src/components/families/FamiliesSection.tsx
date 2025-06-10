@@ -69,10 +69,10 @@ export default function FamiliesManager() {
 
       if (form.id) {
         await api.put(`/families/${form.id}`, payload);
-        setMessage({ text: "Family updated successfully!", type: "success" });
+        setMessage({ text: "Famille modifiees avec succès!", type: "success" });
       } else {
         await api.post("/families", payload);
-        setMessage({ text: "Family created successfully!", type: "success" });
+        setMessage({ text: "Famille créés avec succès!", type: "success" });
       }
       const familiesRes = await api.get("/families");
       setFamilies(familiesRes.data || []);
@@ -120,7 +120,7 @@ export default function FamiliesManager() {
       await api.post(`/families/${addChildForm.familyId}/children`, {
         studentId: addChildForm.studentId,
       });
-      setModalMessage({ text: "Child added to family successfully!", type: "success" });
+      setModalMessage({ text: "L'enfant ajouter a la famille avec succes", type: "success" });
       setTimeout(() => {
         const fetchData = async () => {
           const familiesRes = await api.get("/families");
@@ -153,7 +153,7 @@ export default function FamiliesManager() {
 
   const renderChildren = (family) => {
     if (!family.children || family.children.length === 0) {
-      return <span className="text-gray-500">No children</span>;
+      return <span className="text-gray-500">Aucun enfant</span>;
     }
 
     return (
@@ -164,7 +164,7 @@ export default function FamiliesManager() {
               <span>{student.firstName} {student.lastName}</span>
               {family.discountChild?._id === student._id && (
                 <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                  Discount
+                  Réduction
                 </span>
               )}
             </div>
@@ -193,7 +193,7 @@ export default function FamiliesManager() {
       {/* Form Section */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form.id ? "Update Family" : "Create Family"}
+          {form.id ? "Modifier Famille" : "Créer Famille"}
         </h2>
 
         {message.text && (
@@ -268,7 +268,7 @@ Est éligible aux réductions ?            </span>
         {form.isEligible && form.id && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Discount Child
+             Enfant avec Réduction
             </label>
             <select
               name="discountChild"
