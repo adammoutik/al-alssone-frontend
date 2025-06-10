@@ -39,8 +39,8 @@ export default function FamiliesManager() {
         setFamilies(familiesRes.data || []);
         setStudents(studentsRes.data || []);
       } catch (err) {
-        console.error("Erreur lors de la récupération des données :", err);
-        setError("Échec du chargement des données. Veuillez réessayer plus tard.");
+        console.error("Error fetching data:", err);
+        setError("Failed to load data. Please try again later.");
       }
     };
     fetchData();
@@ -69,18 +69,18 @@ export default function FamiliesManager() {
 
       if (form.id) {
         await api.put(`/families/${form.id}`, payload);
-        setMessage({ text: "Famille mise à jour avec succès !", type: "success" });
+        setMessage({ text: "Family updated successfully!", type: "success" });
       } else {
         await api.post("/families", payload);
-        setMessage({ text: "Famille créée avec succès !", type: "success" });
+        setMessage({ text: "Family created successfully!", type: "success" });
       }
       const familiesRes = await api.get("/families");
       setFamilies(familiesRes.data || []);
       resetForm();
     } catch (err) {
-      console.error("Erreur lors de la sauvegarde de la famille :", err);
+      console.error("Error saving family:", err);
       setMessage({
-        text: err.response?.data?.message || "Erreur lors de la sauvegarde de la famille. Veuillez réessayer.",
+        text: err.response?.data?.message || "Error saving family. Please try again.",
         type: "error",
       });
     }
@@ -98,16 +98,16 @@ export default function FamiliesManager() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer cette famille ?")) {
+    if (window.confirm("Are you sure you want to delete this family?")) {
       try {
         await api.delete(`/families/${id}`);
-        setMessage({ text: "Famille supprimée avec succès !", type: "success" });
+        setMessage({ text: "Family deleted successfully!", type: "success" });
         const familiesRes = await api.get("/families");
         setFamilies(familiesRes.data || []);
       } catch (err) {
-        console.error("Erreur lors de la suppression de la famille :", err);
+        console.error("Error deleting family:", err);
         setMessage({ 
-          text: err.response?.data?.message || "Erreur lors de la suppression de la famille.", 
+          text: err.response?.data?.message || "Error deleting family.", 
           type: "error" 
         });
       }
@@ -120,7 +120,7 @@ export default function FamiliesManager() {
       await api.post(`/families/${addChildForm.familyId}/children`, {
         studentId: addChildForm.studentId,
       });
-      setModalMessage({ text: "Enfant ajouté à la famille avec succès !", type: "success" });
+      setModalMessage({ text: "Child added to family successfully!", type: "success" });
       setTimeout(() => {
         const fetchData = async () => {
           const familiesRes = await api.get("/families");
@@ -132,9 +132,9 @@ export default function FamiliesManager() {
         setModalMessage({ text: "", type: "" });
       }, 1500);
     } catch (err) {
-      console.error("Erreur lors de l'ajout de l'enfant :", err);
+      console.error("Error adding child:", err);
       setModalMessage({
-        text: err.response?.data?.message || "Erreur lors de l'ajout de l'enfant à la famille",
+        text: err.response?.data?.message || "Error adding child to family",
         type: "error",
       });
     }
@@ -153,7 +153,7 @@ export default function FamiliesManager() {
 
   const renderChildren = (family) => {
     if (!family.children || family.children.length === 0) {
-      return <span className="text-gray-500">Pas d'enfants</span>;
+      return <span className="text-gray-500">No children</span>;
     }
 
     return (
@@ -164,10 +164,17 @@ export default function FamiliesManager() {
               <span>{student.firstName} {student.lastName}</span>
               {family.discountChild?._id === student._id && (
                 <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                  Réduction
+                  Discount
                 </span>
               )}
             </div>
+            {/* <button
+              onClick={() => setViewedStudent(student)}
+              className="text-blue-400 hover:text-blue-600 ml-2"
+              title="View student details"
+            >
+              <FaEye />
+            </button> */}
           </div>
         ))}
       </div>
@@ -183,10 +190,10 @@ export default function FamiliesManager() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 min-h-screen">
-      {/* Section formulaire */}
+      {/* Form Section */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form.id ? "Modifier la famille" : "Créer une famille"}
+          {form.id ? "Update Family" : "Create Family"}
         </h2>
 
         {message.text && (
@@ -232,7 +239,7 @@ export default function FamiliesManager() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pourcentage de réduction
+          Percentage de la réduction
           </label>
           <input
             type="number"
@@ -254,15 +261,14 @@ export default function FamiliesManager() {
               onChange={handleChange}
             />
             <span className="text-sm font-medium text-gray-700">
-              Éligible aux réductions ?
-            </span>
+Est éligible aux réductions ?            </span>
           </label>
         </div>
 
         {form.isEligible && form.id && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Enfant bénéficiant de la réduction
+              Discount Child
             </label>
             <select
               name="discountChild"
@@ -270,10 +276,11 @@ export default function FamiliesManager() {
               onChange={handleChange}
               className="border p-2 w-full rounded"
             >
-              <option value="">-- Sélectionner un enfant --</option>
+              <option value="">Sélectionnez un enfant pour la réduction</option>
               {families
-                .find((f) => f._id === form.id)
-                ?.children?.map((child) => (
+                .find(f => f._id === form.id)
+                ?.children
+                ?.map(child => (
                   <option key={child._id} value={child._id}>
                     {child.firstName} {child.lastName}
                   </option>
@@ -282,142 +289,157 @@ export default function FamiliesManager() {
           </div>
         )}
 
-        <div className="flex space-x-4">
+        <div className="flex space-x-3">
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            {form.id ? "Mettre à jour" : "Créer"}
+            {form.id ? "Update" : "Create"}
           </button>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded"
-          >
-            Annuler
-          </button>
+          {form.id && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+            >
+              Fermer
+            </button>
+          )}
         </div>
       </form>
 
-      {/* Section tableau */}
-      <div className="p-6 bg-white rounded-2xl shadow-xl overflow-auto">
-        <h2 className="text-2xl font-bold mb-4">Liste des familles</h2>
+      {/* Families Table */}
+      <div className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Liste des Families</h2>
 
         <input
           type="text"
-          placeholder="Rechercher une famille..."
+          placeholder="Search by family name or email"
+          className="border p-2 w-full mb-4 rounded"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border p-2 rounded mb-4 w-full"
         />
 
         {filteredFamilies.length === 0 ? (
-          <p className="text-gray-500">Aucune famille trouvée.</p>
+          <p className="text-center py-4 text-gray-500">
+            {families.length === 0 ? "No families found" : "No matching families found"}
+          </p>
         ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="border px-4 py-2 text-left">Nom de la famille</th>
-                <th className="border px-4 py-2 text-left">Email</th>
-                <th className="border px-4 py-2 text-left">Enfants</th>
-                <th className="border px-4 py-2 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredFamilies.map((family) => (
-                <tr key={family._id} className="hover:bg-gray-100">
-                  <td className="border px-4 py-2">{family.familyName}</td>
-                  <td className="border px-4 py-2">{family.email}</td>
-                  <td className="border px-4 py-2">{renderChildren(family)}</td>
-                  <td className="border px-4 py-2 text-center space-x-2">
-                    <button
-                      title="Modifier"
-                      onClick={() => handleEdit(family)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      title="Supprimer"
-                      onClick={() => handleDelete(family._id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                    <button
-                      title="Ajouter un enfant"
-                      onClick={() => {
-                        setShowAddChildModal(true);
-                        setAddChildForm({ familyId: family._id, studentId: "" });
-                      }}
-                      className="text-green-600 hover:text-green-800"
-                    >
-                      <FaUserPlus />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto max-h-[600px]">
+            <table className="w-full table-auto border rounded">
+              <thead className="sticky top-0 bg-gray-200 text-gray-700">
+                <tr>
+                  <th className="p-2 border">Nom de la famille</th>
+                  <th className="p-2 border">Email</th>
+                  <th className="p-2 border">enfants</th>
+                  <th className="p-2 border">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredFamilies.map((family) => (
+                  <tr key={family._id} className="hover:bg-gray-50">
+                    <td className="p-2 border">{family.familyName || "-"}</td>
+                    <td className="p-2 border">{family.email || "-"}</td>
+                    <td className="p-2 border max-w-[200px]">
+                      {renderChildren(family)}
+                    </td>
+                   
+                    <td className="p-2 border space-x-2">
+                      <button
+                        onClick={() => handleEdit(family)}
+                        className="text-blue-400 hover:text-blue-800 transition"
+                        title="Modifier une famille"
+                      >
+                        <FaEdit className="inline-block mr-1" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(family._id)}
+                        className="text-red-400 hover:text-red-800 transition"
+                        title="Supprimer une famille"
+                      >
+                        <FaTrashAlt className="inline-block mr-1" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setAddChildForm({ ...addChildForm, familyId: family._id });
+                          setShowAddChildModal(true);
+                          setModalMessage({ text: "", type: "" });
+                        }}
+                        className="text-purple-400 hover:text-purple-800 transition"
+                        title="Ajouter un enfant"
+                      >
+                        <FaUserPlus className="inline-block mr-1" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* Modal pour ajouter un enfant */}
+      {/* Add Child Modal */}
       {showAddChildModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white rounded p-6 max-w-md w-full shadow-lg">
-            <h3 className="text-xl font-semibold mb-4">Ajouter un enfant à la famille</h3>
-
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <form onSubmit={handleAddChild} className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Ajouter un enfant a une famille</h3>
+            
             {modalMessage.text && (
-              <p className={`text-sm ${
-                modalMessage.type === "error" ? "text-red-500" : "text-green-500"
-              } mb-4`}>
+              <div className={`mb-4 p-3 rounded ${
+                modalMessage.type === "error" 
+                  ? "bg-red-100 text-red-700" 
+                  : "bg-green-100 text-green-700"
+              }`}>
                 {modalMessage.text}
-              </p>
+              </div>
             )}
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Selectionner un enfant
+              </label>
+              <select
+                className="border p-2 w-full rounded"
+                value={addChildForm.studentId}
+                onChange={(e) => setAddChildForm({...addChildForm, studentId: e.target.value})}
+                required
+              >
+                {students.map(student => (
+                  <option key={student._id} value={student._id}>
+                    {student.firstName} {student.lastName} 
+                    {student.category && ` (${student.category}`}
+                    {student.niveau && ` - ${student.niveau})`}
+                    {families.some(family => 
+                      family.children && family.children.some(child => child._id === student._id)
+                    ) && " [Assigné]"}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Les élèves marqués par '[Assigné]' sont déjà dans une famille
+              </p>
+            </div>
 
-            <form onSubmit={handleAddChild}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Enfant
-                </label>
-                <select
-                  required
-                  value={addChildForm.studentId}
-                  onChange={(e) =>
-                    setAddChildForm((prev) => ({
-                      ...prev,
-                      studentId: e.target.value,
-                    }))
-                  }
-                  className="border p-2 rounded w-full"
-                >
-                  <option value="">-- Sélectionner un enfant --</option>
-                  {students.map((student) => (
-                    <option key={student._id} value={student._id}>
-                      {student.firstName} {student.lastName} - {student.level}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddChildModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-                >
-                  Ajouter
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddChildModal(false);
+                  setModalMessage({ text: "", type: "" });
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Fermer
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+               Ajouter un enfant
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
