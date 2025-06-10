@@ -20,6 +20,7 @@
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
+    "@google-cloud/translate": "^9.1.0",
     "@heroicons/react": "^2.2.0",
     "@mui/material": "^7.1.1",
     "@mui/x-date-pickers": "^8.5.1",
