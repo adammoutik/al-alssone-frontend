@@ -168,10 +168,10 @@ export default function PaymentsDashboard() {
 
       if (form._id) {
         await api.patch(`/payments/${form._id}`, paymentData);
-        setMessage({ text: "Payment updated successfully", type: "success" });
+        setMessage({ text: "Paiement modifie avec succès", type: "succès" });
       } else {
         await api.post("/payments", paymentData);
-        setMessage({ text: "Payment created successfully", type: "success" });
+        setMessage({ text: "Paiement cree avec succès", type: "succès" });
       }
       
       await fetchData();
@@ -205,7 +205,7 @@ export default function PaymentsDashboard() {
         studentName: students.find(s => s._id === paymentWithDetails.studentId)?.name || "Unknown"
       });
     } else {
-      setMessage({ text: "Failed to load payment details", type: "error" });
+      setMessage({ text: "Échec de la xhargement des detailles", type: "error" });
     }
   };
 
@@ -221,18 +221,18 @@ export default function PaymentsDashboard() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this payment?")) return;
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce paiement ?t?")) return;
     
     try {
       setLoading(prev => ({ ...prev, table: true }));
       await api.delete(`/payments/${id}`);
-      setMessage({ text: "Payment deleted successfully", type: "success" });
+      setMessage({ text: "Paiement supprimé avec succès", type: "succès" });
       await fetchData();
     } catch (err: any) {
-      console.error("Error deleting payment:", err);
+      console.error("Échec de la suppression du paiement", err);
       setMessage({ 
-        text: err.response?.data?.message || "Failed to delete payment", 
-        type: "error" 
+        text: err.response?.data?.message || "Échec de la suppression du paiement", 
+        type: "erreur" 
       });
     } finally {
       setLoading(prev => ({ ...prev, table: false }));
@@ -268,7 +268,7 @@ export default function PaymentsDashboard() {
       {/* Form Section */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form._id ? "Update Payment" : "Create Payment"}
+          {form._id ? "Modifier le paiement" : "Ajouter un paiement"}
         </h2>
 
         {message.text && (
@@ -281,7 +281,7 @@ export default function PaymentsDashboard() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Student*</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">élève*</label>
             <select
               name="studentId"
               value={form.studentId}
@@ -289,7 +289,7 @@ export default function PaymentsDashboard() {
               className="border p-2 w-full rounded"
               required
             >
-              <option value="">Select a student</option>
+              <option value="">Sélectionner un élève</option>
               {students.map(student => (
                 <option key={student._id} value={student._id}>
                   {student.name}
@@ -299,7 +299,7 @@ export default function PaymentsDashboard() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fees*</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Frais*</label>
             <div className="space-y-2 max-h-60 overflow-y-auto p-2 border rounded">
               {fees.map(fee => (
                 <div key={fee._id} className="flex items-center">
@@ -319,10 +319,10 @@ export default function PaymentsDashboard() {
           </div>
 
           <div className="bg-gray-50 p-3 rounded">
-            <p className="font-medium">Total Amount: {calculateTotalAmount()} MAD</p>
+            <p className="font-medium">Montant total: {calculateTotalAmount()} MAD</p>
             {form.discountApplied && (
               <p className="text-green-600">
-                After 20% discount: {calculateTotalAmount() * 0.8} MAD
+                Apres une réduction de 20% {calculateTotalAmount() * 0.8} MAD
               </p>
             )}
           </div>
@@ -335,7 +335,7 @@ export default function PaymentsDashboard() {
                 checked={form.discountApplied}
                 onChange={handleChange}
               />
-              <span>Apply 20% Discount</span>
+              <span>Appliquer réduction 20%</span>
             </label>
           </div>
 
@@ -348,8 +348,8 @@ export default function PaymentsDashboard() {
               className="border p-2 w-full rounded"
               required
             >
-              <option value="paid">Paid</option>
-              <option value="unpaid">Unpaid</option>
+              <option value="paid">Payé</option>
+              <option value="unpaid">Non payé</option>
             </select>
           </div>
 
@@ -362,7 +362,7 @@ export default function PaymentsDashboard() {
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
-            {loading.form ? "Processing..." : form._id ? "Update Payment" : "Create Payment"}
+            {loading.form ? "Traitement..." : form._id ? "Modifier le paiement" : "Ajouter un paiement"}
           </button>
         </div>
       </form>
@@ -370,21 +370,14 @@ export default function PaymentsDashboard() {
       {/* Payments Table Section */}
       <div className="p-6 border rounded-2xl shadow-xl bg-white">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Payments List</h2>
-          <button 
-            onClick={fetchData}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            disabled={loading.table}
-          >
-            <FaSync className={loading.table ? "animate-spin" : ""} />
-            Refresh
-          </button>
+          <h2 className="text-2xl font-bold text-gray-800">Liste des Paiements</h2>
+         
         </div>
         
         <div className="mb-4">
           <input
             type="text"
-            placeholder="Search payments..."
+            placeholder="recherche des paiements..."
             className="border p-2 w-full rounded"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -392,7 +385,7 @@ export default function PaymentsDashboard() {
         </div>
 
         {loading.table ? (
-          <div className="text-center py-4">Loading payments...</div>
+          <div className="text-center py-4">Chargement...</div>
         ) : filteredPayments.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
             {searchTerm ? "No matching payments found" : "No payments available"}
@@ -402,8 +395,8 @@ export default function PaymentsDashboard() {
             <table className="min-w-full border rounded">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="p-2 text-left">Student</th>
-                  <th className="p-2 text-left">Amount</th>
+                  <th className="p-2 text-left">Élève</th>
+                  <th className="p-2 text-left">Montant payé</th>
                   <th className="p-2 text-left">Status</th>
                   <th className="p-2 text-left">Actions</th>
                 </tr>
@@ -457,29 +450,29 @@ export default function PaymentsDashboard() {
       {viewedPayment && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">Payment Details</h3>
+            <h3 className="text-xl font-bold mb-4">Détails du paiement</h3>
             {loading.details ? (
-              <div className="text-center py-4">Loading details...</div>
+              <div className="text-center py-4">Chargement...</div>
             ) : (
               <div className="space-y-2">
-                <p><strong>Student:</strong> {viewedPayment.studentName}</p>
+                <p><strong>Élève:</strong> {viewedPayment.studentName}</p>
                 
                 <div className="mt-2">
-                  <p className="font-medium">Fees:</p>
+                  <p className="font-medium">Frais:</p>
                   <ul className="list-disc pl-5">
                     {viewedPayment.feeId.map((fee, index) => (
                       <li key={index} className="py-1">
                         <p><strong>Type:</strong> {fee.type}</p>
-                        <p><strong>Category:</strong> {fee.category}</p>
-                        <p><strong>Amount:</strong> {fee.amount} MAD</p>
-                        <p><strong>Frequency:</strong> {fee.frequency}</p>
+                        <p><strong>Categorie:</strong> {fee.category}</p>
+                        <p><strong>Montant payé:</strong> {fee.amount} MAD</p>
+                        <p><strong>Fréquence:</strong> {fee.frequency}</p>
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <p><strong>Amount Paid:</strong> {viewedPayment.amountPaid} MAD</p>
-                <p><strong>Discount Applied:</strong> {viewedPayment.discountApplied ? "Yes" : "No"}</p>
+                <p><strong>Montant payé</strong> {viewedPayment.amountPaid} MAD</p>
+                <p><strong>Réduction appliquée:</strong> {viewedPayment.discountApplied ? "Oui" : "Non"}</p>
                 <p><strong>Status:</strong> 
                   <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
                     viewedPayment.status.toLowerCase() === 'paid' 
@@ -489,8 +482,8 @@ export default function PaymentsDashboard() {
                     {viewedPayment.status}
                   </span>
                 </p>
-                <p><strong>Created:</strong> {new Date(viewedPayment.createdAt).toLocaleString()}</p>
-                <p><strong>Last Updated:</strong> {new Date(viewedPayment.updatedAt).toLocaleString()}</p>
+                <p><strong>Date de création:</strong> {new Date(viewedPayment.createdAt).toLocaleString()}</p>
+                <p><strong>Dernière mise à jour:</strong> {new Date(viewedPayment.updatedAt).toLocaleString()}</p>
               </div>
             )}
             <div className="mt-6 flex justify-end">
@@ -499,7 +492,7 @@ export default function PaymentsDashboard() {
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                 disabled={loading.details}
               >
-                Close
+                Fermer
               </button>
             </div>
           </div>
