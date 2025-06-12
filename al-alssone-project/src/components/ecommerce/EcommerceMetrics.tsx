@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GroupIcon, AlertIcon } from "../../icons";
 import api from "../../services/axios";
+import { FaBell, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 interface Student {
   _id: string;
@@ -42,7 +43,7 @@ interface DashboardMetrics {
 export default function EcommerceMetrics() {
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState("admin");
+  // const [username, setUsername] = useState("admin");
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalStudents: 0,
     unpaidStudents: 0,
@@ -59,6 +60,8 @@ export default function EcommerceMetrics() {
     metrics: null as string | null,
     alerts: null as string | null,
   });
+    const [expandedNotifications, setExpandedNotifications] = useState<Record<string, boolean>>({});
+
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -145,25 +148,33 @@ export default function EcommerceMetrics() {
     return formatter.format(amountPaid);
   }
 
- function getNotificationStatusBadge(status: Notification["status"]) {
-  const baseClasses = "px-2 py-1 text-xs rounded-full";
 
-  switch (status) {
-    case "sent":
-      return <span className={`${baseClasses} bg-green-100 text-green-800`}>Envoyé</span>;
-    case "failed":
-      return <span className={`${baseClasses} bg-red-100 text-red-800`}>Échec</span>;
-    default:
-      return <span className={`${baseClasses} bg-yellow-100 text-yellow-800`}>En attente</span>;
-  }
-}
+  const toggleExpandNotification = (id: string) => {
+    setExpandedNotifications(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
+  const getNotificationIcon = (status?: string) => {
+    switch (status) {
+      case 'paid': return '✅';
+      case 'overdue': return '⚠️';
+      case 'failed': return '❌';
+      default: return 'ℹ️';
+    }
+  };
 
-  function formatDateTime(dateString: string) {
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  }
-
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+  }) 
+  };
+ 
   return (
     <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
       {/* Welcome Header */}
@@ -184,7 +195,7 @@ export default function EcommerceMetrics() {
                 <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
               </div>
               <div className="mt-5">
-                <span className="text-sm text-gray-500 dark:text-black-400">Total Étudiants</span>
+                <span className="text-sm text-gray-500 dark:text-black-400">Total élèves</span>
                 {loading.metrics ? (
                   <div className="h-6 w-16 bg-gray-200 rounded mt-2 animate-pulse"></div>
                 ) : error.metrics ? (
@@ -253,7 +264,7 @@ export default function EcommerceMetrics() {
                 {metrics.upcomingPayments.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="p-3 text-center text-gray-500">
-                      {loading.metrics ? "Loading payments..." : "No upcoming payments"}
+                      {loading.metrics ? "Loading payments..." : "No payments"}
                     </td>
                   </tr>
                 ) : (
@@ -275,54 +286,133 @@ export default function EcommerceMetrics() {
         </div>
 
               {/* Right Column - Alerts */}
-          {/* Right Column - Recent Alerts */}
-        <div className="w-[400px] h-[380px] flex-shrink-0 rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-white/[0.03]">
-          <h2 className="text-lg font-semibold p-5 text-gray-800 dark:text-black/90">Notifications récentes</h2>
-
-          {loading.alerts ? (
-            <div className="p-5 animate-pulse text-gray-500">Loading ...</div>
-          ) : error.alerts ? (
-            <div className="p-5 text-red-500">Impossible de charger les notifications</div>
-          ) : (
-            <>
-              <ul className="divide-y divide-gray-200 dark:divide-white/10 max-h-[400px] overflow-y-auto">
-                {recentAlerts.slice(0, 4).map((alert) => (
-                  <li
-                    key={alert._id}
-                    className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-black/10 cursor-pointer"
-                    onClick={() => {
-                      if (alert.type === "alert") {
-                        navigate("/notifications");
-                      }
-                    }}
-                  >
-                    {/* <div className="min-w-[50px]">{getAlertIcon(alert.type)}</div> */}
-
-                    <div className="flex-grow">
-                      {/* <p className="font-semibold text-gray-800 dark:text-black/90">{alert.title || "Alert"}</p> */}
-                      <p className="text-xs text-gray-500 dark:text-black/60">{alert.message}</p>
-                      <p className="text-xs text-gray-400 dark:text-black/30">{formatDateTime(alert.scheduledFor)}</p>
-                    </div>
-
-                    <div>{getNotificationStatusBadge(alert.status)}</div>
-                  </li>
-                ))}
-              </ul>
-
-              {recentAlerts.length > 4 && (
-                <div className="p-4 flex justify-end">
-                  <button
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
-                    onClick={() => navigate("/notifications")}
-                  >
-                    Voir tout
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+         
+     {/* Right Column - Notifications */}
+      <div className="w-[400px] flex-shrink-0 rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="flex justify-between items-center px-5 py-3 border-b border-gray-300 dark:border-gray-700">
+          <h4 className="font-semibold text-gray-700 dark:text-gray-300">
+            <FaBell className="inline mr-2" />
+            Notifications
+          </h4>
+          <button
+            onClick={() => navigate("/notifications")}
+            className="text-blue-600 hover:underline text-sm font-medium"
+          >
+            Voir tout
+          </button>
         </div>
+
+        {loading.alerts ? (
+          <div className="p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">Loading notifications...</p>
+          </div>
+        ) : error.alerts ? (
+          <div className="p-4 text-center text-red-500 dark:text-red-400">
+            {error.alerts}
+            <button
+              onClick={() => window.location.reload()}
+              className="ml-2 text-blue-500 hover:underline dark:text-blue-400"
+            >
+              Retry
+            </button>
+          </div>
+        ) : recentAlerts.length === 0 ? (
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+            No notifications found
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 max-h-[400px] overflow-y-auto">
+            {recentAlerts.slice(0, 5).map(notification => {
+              const studentName = notification.student 
+                ? `${notification.student.firstName} ${notification.student.lastName}`
+                : null;
+
+              return (
+                <div
+                  key={notification._id}
+                  className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    notification.status === 'pending' ? 'bg-blue-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'
+                  }`}
+                >
+                  <div className="flex items-start">
+                    <div className="mr-3 text-lg">
+                      {getNotificationIcon(notification.status)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <h3 className={`text-sm font-medium ${
+                            notification.status === 'pending' 
+                              ? 'text-blue-600 dark:text-blue-400' 
+                              : 'text-gray-800 dark:text-gray-200'
+                          }`}>
+                            {notification.title || "Notification"}
+                          </h3>
+                          {notification.status && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              notification.status === 'sent' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                              notification.status === 'failed' 
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200'
+                            }`}>
+                              {notification.status}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatDate(notification.scheduledFor)}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleExpandNotification(notification._id);
+                            }}
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            {expandedNotifications[notification._id] ? <FaChevronUp /> : <FaChevronDown />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Student Information */}
+                      {studentName && (
+                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                          Student: <span className="font-semibold">{studentName}</span>
+                        </div>
+                      )}
+
+                      {/* Scheduled Time */}
+                      {notification.scheduledFor && (
+                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                          Planifié: {formatDate(notification.scheduledFor)}
+                        </div>
+                      )}
+
+                      {/* Notification Message */}
+                      <p className={`mt-2 text-sm text-gray-600 dark:text-gray-300 ${
+                        expandedNotifications[notification._id] ? '' : 'line-clamp-2'
+                      }`}>
+                        {notification.message}
+                      </p>
+
+                      {/* Error Message (if failed) */}
+                      {notification.status === 'failed' && (
+                        <div className="mt-1 text-xs text-red-500 dark:text-red-400">
+                          Error: Failed to send notification
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
+    </div>
   );
-} 
+}

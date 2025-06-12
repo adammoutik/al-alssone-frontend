@@ -14,11 +14,11 @@ import StudentForm from "./components/students/StudentForm";
 import StudentsListPage from "./components/students/StudentsList";
 import Acceuil from "./components/acceuil/acceuil";
 import StudentPaymentsPage from "./components/students/StudentPaymentsPage";
-import { TranslationProvider } from "./context/TranslationContext"; // New import
+import { TranslationProvider } from "./context/TranslationContext"; 
 
 export default function App() {
   return (
-    <TranslationProvider> {/* Wrap your entire app with the provider */}
+    <TranslationProvider> 
       <Router>
         <ScrollToTop />
         <Routes>
@@ -38,7 +38,7 @@ export default function App() {
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/acceuil" element={<Acceuil />} />
+          <Route index path="/acceuil" element={<Acceuil />} />
           <Route path="/public/student/payments/:studentCode" element={<StudentPaymentsPage />} />
         </Routes>
       </Router>

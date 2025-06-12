@@ -147,20 +147,20 @@ export default function StudentsListPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Students List</h1>
+        <h1 className="text-2xl font-bold">Liste des Élèves</h1>
         <div className="flex space-x-3">
           <button
             onClick={generatePDF}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center"
           >
             <FaFilePdf className="mr-2" />
-            Export PDF
+            Exporter PDF
           </button>
           <Link
             to="/students/create"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Create New Student
+             Créé un Élève
           </Link>
         </div>
       </div>
@@ -186,7 +186,7 @@ export default function StudentsListPage() {
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
-          <option value="">All Categories</option>
+          <option value="">Tous les Categories</option>
           <option value="maternelle">Maternelle</option>
           <option value="primaire">Primaire</option>
         </select>
@@ -195,7 +195,7 @@ export default function StudentsListPage() {
           value={selectedNiveau}
           onChange={(e) => setSelectedNiveau(e.target.value)}
         >
-          <option value="">All Levels</option>
+          <option value="">Tous les niveaux</option>
           <option value="TPS">TPS</option>
           <option value="PS">PS</option>
           <option value="MS">MS</option>
@@ -213,10 +213,10 @@ export default function StudentsListPage() {
         <table className="w-full table-auto border">
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-3 text-left">Student Code</th>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Level</th>
-              <th className="p-3 text-left">Category</th>
+              <th className="p-3 text-left">Code d'Élève</th>
+              <th className="p-3 text-left">Nom</th>
+              <th className="p-3 text-left">Niveau</th>
+              <th className="p-3 text-left">Categorie</th>
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Actions</th>
             </tr>
@@ -269,39 +269,36 @@ export default function StudentsListPage() {
       {viewedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Student Details</h3>
+            <h3 className="text-xl font-bold mb-4">Details d'Élève</h3>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <p className="font-semibold">Student Code:</p>
+                <p className="font-semibold">Code d'Élève:</p>
                 <p>{viewedStudent.studentCode || "N/A"}</p>
               </div>
               <div>
-                <p className="font-semibold">First Name:</p>
+                <p className="font-semibold">Prénom:</p>
                 <p>{viewedStudent.firstName}</p>
               </div>
               <div>
-                <p className="font-semibold">Last Name:</p>
+                <p className="font-semibold">Nom:</p>
                 <p>{viewedStudent.lastName}</p>
               </div>
               <div>
-                <p className="font-semibold">Birth Date:</p>
+                <p className="font-semibold">Date de naissance:</p>
                 <p>{new Date(viewedStudent.birthDate).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="font-semibold">Category:</p>
+                <p className="font-semibold">Categorie:</p>
                 <p className="capitalize">{viewedStudent.category}</p>
               </div>
               <div>
-                <p className="font-semibold">Level:</p>
+                <p className="font-semibold">niveau:</p>
                 <p>{viewedStudent.niveau}</p>
               </div>
+             
               <div>
-                <p className="font-semibold">Family ID:</p>
-                <p>{viewedStudent.familyId || "N/A"}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Registration Date:</p>
+                <p className="font-semibold">Date d'inscription:</p>
                 <p>{new Date(viewedStudent.registrationDate).toLocaleDateString()}</p>
               </div>
               <div>
@@ -309,12 +306,12 @@ export default function StudentsListPage() {
                 <p>{viewedStudent.parentPhoneNumber}</p>
               </div>
               <div>
-                <p className="font-semibold">School Transport:</p>
-                <p>{viewedStudent.usesTransport ? "Yes" : "No"}</p>
+                <p className="font-semibold">Utilise le transport:</p>
+                <p>{viewedStudent.usesTransport ? "Oui" : "Non"}</p>
               </div>
               <div>
                 <p className="font-semibold">After School Care:</p>
-                <p>{viewedStudent.isGarde ? "Yes" : "No"}</p>
+                <p>{viewedStudent.isGarde ? "Oui" : "Non"}</p>Garde après l'école
               </div>
               <div>
                 <p className="font-semibold">Status:</p>
@@ -327,7 +324,7 @@ export default function StudentsListPage() {
                 onClick={() => setViewedStudent(null)}
                 className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
               >
-                Close
+                Fermer
               </button>
             </div>
           </div>
@@ -338,12 +335,12 @@ export default function StudentsListPage() {
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Edit Student</h3>
+            <h3 className="text-xl font-bold mb-4">Modifier Élève</h3>
             
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">First Name</label>
+                  <label className="block font-semibold mb-1">Prénom</label>
                   <input
                     type="text"
                     className="border p-2 rounded w-full"
@@ -353,7 +350,7 @@ export default function StudentsListPage() {
                   />
                 </div>
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Last Name</label>
+                  <label className="block font-semibold mb-1">Nom</label>
                   <input
                     type="text"
                     className="border p-2 rounded w-full"
@@ -363,7 +360,7 @@ export default function StudentsListPage() {
                   />
                 </div>
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Birth Date</label>
+                  <label className="block font-semibold mb-1">Date de naissance</label>
                   <input
                     type="date"
                     className="border p-2 rounded w-full"
@@ -373,7 +370,7 @@ export default function StudentsListPage() {
                   />
                 </div>
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Category</label>
+                  <label className="block font-semibold mb-1">Categorie</label>
                   <select
                     className="border p-2 rounded w-full"
                     value={form.category}
@@ -385,7 +382,7 @@ export default function StudentsListPage() {
                   </select>
                 </div>
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Level</label>
+                  <label className="block font-semibold mb-1">Niveau</label>
                   <select
                     className="border p-2 rounded w-full"
                     value={form.niveau}
@@ -404,17 +401,9 @@ export default function StudentsListPage() {
                     <option value="CE6">CE6</option>
                   </select>
                 </div>
+              
                 <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Family ID</label>
-                  <input
-                    type="text"
-                    className="border p-2 rounded w-full"
-                    value={form.familyId}
-                    onChange={(e) => setForm({...form, familyId: e.target.value})}
-                  />
-                </div>
-                <div className="col-span-1">
-                  <label className="block font-semibold mb-1">Parent Phone</label>
+                  <label className="block font-semibold mb-1">Téléphone du parent</label>
                   <input
                     type="text"
                     className="border p-2 rounded w-full"
@@ -431,7 +420,7 @@ export default function StudentsListPage() {
                     checked={form.isGarde}
                     onChange={(e) => setForm({...form, isGarde: e.target.checked})}
                   />
-                  <label htmlFor="isGarde">After School Care</label>
+                  <label htmlFor="isGarde">Garde après l'école</label>
                 </div>
                 <div className="col-span-1 flex items-center">
                   <input
@@ -441,7 +430,7 @@ export default function StudentsListPage() {
                     checked={form.usesTransport}
                     onChange={(e) => setForm({...form, usesTransport: e.target.checked})}
                   />
-                  <label htmlFor="usesTransport">School Transport</label>
+                  <label htmlFor="usesTransport">Utilise le transportt</label>
                 </div>
                 <div className="col-span-1 flex items-center">
                   <input
@@ -461,7 +450,7 @@ export default function StudentsListPage() {
                   onClick={() => setShowEditModal(false)}
                   className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                 >
-                  Cancel
+                  Fermer
                 </button>
                 <button
                   type="submit"

@@ -123,7 +123,7 @@ export default function FeesDashboard() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie de frais</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
           <select
             name="category"
             value={form.category}
