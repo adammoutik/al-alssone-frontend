@@ -1,31 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaBell, FaCheck, FaTrash, FaChevronDown, FaChevronUp, FaFilter } from 'react-icons/fa';
+import { FaBell, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
-
-interface Student {
-  _id: string;
-  firstName: string;
-  lastName: string;
-}
-
-interface Notification {
-  _id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'alert' | 'success';
-  read: boolean;
-  createdAt: string;
-  scheduledFor?: string;
-  actionUrl?: string;
-  studentId?: string;
-  status?: string;
-  payment?: {
-    status?: string;
-    studentFirstName?: string;
-    studentLastName?: string;
-  };
-}
+import { Notification, Student } from '../types/notification';
 
 const NotificationCenter: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -38,6 +15,20 @@ const NotificationCenter: React.FC = () => {
   const [expandedNotifications, setExpandedNotifications] = useState<Record<string, boolean>>({});
   const navigate = useNavigate();
 
+  const fetchStudentDetails = useCallback(async (studentId: string) => {
+    try {
+      if (students[studentId]) return; // Already fetched
+      
+      const response = await api.get<Student>(`/students/${studentId}`);
+      setStudents(prev => ({
+        ...prev,
+        [studentId]: response.data
+      }));
+    } catch (error) {
+      console.error('Error fetching student:', error);
+    }
+  }, [students]);
+
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -47,31 +38,16 @@ const NotificationCenter: React.FC = () => {
         limit: 20,
         read: filter === 'unread' ? false : undefined
       };
-      const response = await api.get('/notifications', { params });
+      const response = await api.get<Notification[]>('/notifications', { params });
 
       // Extract unique student IDs from notifications
       const studentIds = response.data
-        .map((n: Notification) => n.studentId)
-        .filter((id: string | undefined): id is string => !!id)
-        .filter((id: string, index: number, self: string[]) => self.indexOf(id) === index);
+        .filter(n => n.paymentId?.studentId)
+        .map(n => n.paymentId!.studentId)
+        .filter((id, index, self) => self.indexOf(id) === index);
 
-      // Only fetch students if we have student IDs
-      if (studentIds.length > 0) {
-        try {
-          const studentsResponse = await api.get('/students', {
-            params: { ids: studentIds.join(',') }
-          });
-
-          const studentsMap = studentsResponse.data.reduce((acc: Record<string, Student>, student: Student) => {
-            acc[student._id] = student;
-            return acc;
-          }, {});
-          setStudents(prev => ({ ...prev, ...studentsMap }));
-        } catch (err) {
-          console.error('Error fetching students:', err);
-          // Continue even if student fetch fails
-        }
-      }
+      // Fetch student details in parallel
+      await Promise.all(studentIds.map(fetchStudentDetails));
 
       setNotifications(prev => page === 1 ? response.data : [...prev, ...response.data]);
       setHasMore(response.data.length === 20);
@@ -81,7 +57,7 @@ const NotificationCenter: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, filter]);
+  }, [page, filter, fetchStudentDetails]);
 
   useEffect(() => {
     fetchNotifications();
@@ -94,14 +70,25 @@ const NotificationCenter: React.FC = () => {
     }));
   };
 
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'warning': return '⚠️';
-      case 'alert': return '🚨';
-      case 'success': return '✅';
+  const getNotificationIcon = (status?: string) => {
+    switch (status) {
+      case 'paid': return '✅';
+      case 'overdue': return '⚠️';
+      case 'failed': return '❌';
       default: return 'ℹ️';
     }
   };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6">
       <div className="flex justify-between items-center mb-6">
@@ -113,20 +100,33 @@ const NotificationCenter: React.FC = () => {
           onClick={() => navigate(-1)}
           className="text-sm text-blue-500 hover:underline"
         >
-          Back to Dashboard
+         Retour au tableau de bord
         </button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-4">
-          {/* Filter controls would go here */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 rounded-md text-sm ${filter === 'all' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-600 dark:text-gray-400'}`}
+            >
+              All
+            </button>
+            {/* <button
+              onClick={() => setFilter('unread')}
+              className={`px-3 py-1 rounded-md text-sm ${filter === 'unread' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'text-gray-600 dark:text-gray-400'}`}
+            >
+              Unread
+            </button> */}
+          </div>
         </div>
         
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {isLoading && page === 1 ? (
             <div className="p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-500 dark:text-gray-400">Loading notifications...</p>
+              <p className="mt-2 text-gray-500 dark:text-gray-400">Chargement des notifications...</p>
             </div>
           ) : error ? (
             <div className="p-4 text-center text-red-500 dark:text-red-400">
@@ -135,21 +135,26 @@ const NotificationCenter: React.FC = () => {
                 onClick={fetchNotifications}
                 className="ml-2 text-blue-500 hover:underline dark:text-blue-400"
               >
-                Retry
+                Réessayer
               </button>
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-              No notifications found
+              Aucune notification trouvée
             </div>
           ) : (
             notifications.map(notification => {
-              const student = notification.studentId ? students[notification.studentId] : null;
+              const student = notification.paymentId?.studentId 
+                ? students[notification.paymentId.studentId]
+                : null;
+              
               const studentName = student 
                 ? `${student.firstName} ${student.lastName}`
-                : notification.payment 
-                  ? `${notification.payment.studentFirstName} ${notification.payment.studentLastName}`
+                : notification.paymentId?.studentId
+                  ? 'Loading student...'
                   : null;
+
+              const familyName = notification.familyId?.familyName || null;
 
               return (
                 <div
@@ -160,7 +165,7 @@ const NotificationCenter: React.FC = () => {
                 >
                   <div className="flex items-start">
                     <div className="mr-3 text-lg">
-                      {getNotificationIcon(notification.type)}
+                      {getNotificationIcon(notification.status)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start">
@@ -170,7 +175,7 @@ const NotificationCenter: React.FC = () => {
                               ? 'text-blue-600 dark:text-blue-400' 
                               : 'text-gray-800 dark:text-gray-200'
                           }`}>
-                            {notification.title}
+                            {notification.subject}
                           </h3>
                           {notification.status && (
                             <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -186,7 +191,7 @@ const NotificationCenter: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(notification.createdAt).toLocaleDateString()}
+                            {formatDate(notification.createdAt)}
                           </span>
                           <button
                             onClick={() => toggleExpandNotification(notification._id)}
@@ -200,14 +205,21 @@ const NotificationCenter: React.FC = () => {
                       {/* Student Information */}
                       {studentName && (
                         <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                          Student: <span className="font-semibold">{studentName}</span>
+                          Élève: <span className="font-semibold">{studentName}</span>
                         </div>
                       )}
+
+                      {/* Family Information */}
+                      {/* {familyName && (
+                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+                          Family: <span className="font-semibold">{familyName}</span>
+                        </div>
+                      )} */}
 
                       {/* Scheduled Time */}
                       {notification.scheduledFor && (
                         <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                          Scheduled: {new Date(notification.scheduledFor).toLocaleString()}
+                          Planifié: {formatDate(notification.scheduledFor)}
                         </div>
                       )}
 
@@ -217,6 +229,13 @@ const NotificationCenter: React.FC = () => {
                       }`}>
                         {notification.message}
                       </p>
+
+                      {/* Error Message (if failed) */}
+                      {notification.errorMessage && (
+                        <div className="mt-1 text-xs text-red-500 dark:text-red-400">
+                          Erreur: {notification.errorMessage}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

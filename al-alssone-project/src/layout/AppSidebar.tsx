@@ -18,37 +18,37 @@ type NavItem = {
 const navItems: NavItem[] = [
   {
     icon: <Grid />,
-    name: "Dashboard",
+    name: "Tableau du bord",
     path: "/",
   },
   {
     icon: <CreditCard />,
-    name: "Fees Management",
+    name: "Gestion des frais",
     path: "/fees",
   },
   {
     icon: <User />,
-    name: "Students",
+    name: "Élèves",
     path: "/students",
   },
   {
     icon: <Users />,
-    name: "Families",
+    name: "Familles",
     path: "/families",
   },
   {
     icon: <DollarSign />,
-    name: "Payments",
+    name: "Paiements",
     path: "/payments",
   },
   {
     icon: <Clock />,
-    name: "Payments History",
+    name: "Historique des Paiements ",
     path: "/Historique",
   },
   {
     icon: <User />,
-    name: "Users",
+    name: "Utilisateurs",
     path: "/users",
   },
 ];

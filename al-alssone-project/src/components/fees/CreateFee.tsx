@@ -22,7 +22,7 @@ export default function FeesDashboard() {
       const response = await api.get("/fees");
       setFees(response.data);
     } catch (error) {
-      console.error("Error fetching fees:", error);
+      console.error("Erreur lors de la récupération des frais:", error);
     }
   };
 
@@ -50,10 +50,10 @@ export default function FeesDashboard() {
     try {
       if (form.id !== null) {
         await api.put(`/fees/${form.id}`, dataToSend);
-        setMessage("Fee updated successfully.");
+        setMessage("Frais mis à jour avec succès.");
       } else {
         await api.post("/fees", dataToSend);
-        setMessage("Fee created successfully.");
+        setMessage("Frais créés avec succès.");
       }
 
       fetchFees();
@@ -67,8 +67,8 @@ export default function FeesDashboard() {
         id: null,
       });
     } catch (error) {
-      console.error("Error submitting fee:", error);
-      setMessage("An error occurred. Please try again.");
+      console.error("Erreur lors de l'envoi des frais:", error);
+      setMessage("Une erreur s'est produite. Veuillez réessayer.");
     }
   };
 
@@ -84,15 +84,15 @@ export default function FeesDashboard() {
     try {
       await api.delete(`/fees/${id}`);
       fetchFees();
-      setMessage("Fee deleted successfully.");
+      setMessage("Frais supprimés avec succès.");
     } catch (error) {
-      console.error("Error deleting fee:", error);
-      setMessage("Failed to delete fee.");
+      console.error("Erreur lors de la suppression des frais", error);
+      setMessage("Échec de la suppression des frais.");
     }
   };
 
   const filteredFees = fees.filter((fee) =>
-    [fee.type, fee.category]
+    [fee.type, fee.category, fee.description]
       .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -101,29 +101,29 @@ export default function FeesDashboard() {
       {/* Form Section */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {form.id ? "Update Fee" : "Create Fee"}
+          {form.id ? "Modifier frais" : "Créer Frais"}
         </h2>
 
         {message && <p className="text-sm text-blue-600">{message}</p>}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type de frais</label>
           <select
             name="type"
             value={form.type}
             onChange={handleChange}
             className="border p-2 w-full rounded"
           >
-            <option value="registration">Registration</option>
-            <option value="insurance">Insurance</option>
-            <option value="childcare">Childcare</option>
-            <option value="education">Education</option>
+            <option value="registration">Inscription</option>
+            <option value="insurance"> Assurance</option>
+            <option value="childcare">Garderie</option>
+            <option value="education">Scolarité</option>
             <option value="transport">Transport</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fee Category</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
           <select
             name="category"
             value={form.category}
@@ -147,7 +147,7 @@ export default function FeesDashboard() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Amount (MAD)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Montant (MAD)</label>
           <input
             name="amount"
             type="number"
@@ -159,7 +159,7 @@ export default function FeesDashboard() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Is Active?</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Est actif ?</label>
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
@@ -181,7 +181,7 @@ export default function FeesDashboard() {
 
       {/* Fees Table */}
       <div className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Fees List</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Liste des frais</h2>
 
         <input
           type="text"
@@ -196,8 +196,8 @@ export default function FeesDashboard() {
             <thead className="sticky top-0 bg-gray-200 text-gray-700">
               <tr>
                 <th className="p-2 border">Type</th>
-                <th className="p-2 border">Category</th>
-                <th className="p-2 border">Amount</th>
+                <th className="p-2 border">Categorie</th>
+                <th className="p-2 border">Montant</th>
                 <th className="p-2 border">Status</th>
                 <th className="p-2 border">Actions</th>
               </tr>
@@ -215,19 +215,19 @@ export default function FeesDashboard() {
                   <td className="p-2 border space-x-2">
                     <button
                       onClick={() => setViewedFee(fee)}
-                      className="text-green-400 hover:text-green-800 transition"
+                      className="text-green-600 hover:text-green-800 transition"
                     >
                       <FaEye className="inline-block mr-1" /> 
                     </button>
                     <button
                       onClick={() => handleEdit(fee)}
-                      className="text-blue-400 hover:text-blue-800 transition"
+                      className="text-blue-600 hover:text-blue-800 transition"
                     >
                       <FaEdit className="inline-block mr-1" /> 
                     </button>
                     <button
                       onClick={() => handleDelete(fee._id)}
-                      className="text-red-400 hover:text-red-800 transition"
+                      className="text-red-600 hover:text-red-800 transition"
                     >
                       <FaTrashAlt className="inline-block mr-1" /> 
                     </button>
@@ -243,20 +243,20 @@ export default function FeesDashboard() {
       {viewedFee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Fee Details</h3>
+            <h3 className="text-xl font-bold mb-4"> Details du Frais</h3>
             <p><strong>Type:</strong> {viewedFee.type}</p>
-            <p><strong>Category:</strong> {viewedFee.category}</p>
+            <p><strong>Categorie:</strong> {viewedFee.category}</p>
             <p><strong>Description:</strong> {viewedFee.description || "N/A"}</p>
-            <p><strong>Amount:</strong> {viewedFee.amount} MAD</p>
+            <p><strong>Montant:</strong> {viewedFee.amount} MAD</p>
             <p><strong>Status:</strong> {viewedFee.isActive ? "Active" : "Inactive"}</p>
-            {viewedFee.frequency && <p><strong>Frequency:</strong> {viewedFee.frequency}</p>}
+            {viewedFee.frequency && <p><strong>Frequence:</strong> {viewedFee.frequency}</p>}
 
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setViewedFee(null)}
                 className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-800"
               >
-                Close
+                Fermer
               </button>
             </div>
           </div>

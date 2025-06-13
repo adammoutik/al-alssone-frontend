@@ -41,7 +41,7 @@ export default function CreateStudentPage() {
       };
 
       await api.post("/students", dataToSend);
-      setMessage("Student created successfully!");
+      setMessage(" Élève créé avec succès!");
       
       // Redirect to students list after 1.5 seconds
       setTimeout(() => {
@@ -58,7 +58,7 @@ export default function CreateStudentPage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Create New Student</h1>
+      <h1 className="text-2xl font-bold mb-6">Créer un nouvel élève</h1>
       
       {message && <p className="text-sm text-blue-600 mb-4">{message}</p>}
 
@@ -66,7 +66,7 @@ export default function CreateStudentPage() {
         {/* Keep all your existing form fields exactly as they are */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
             <input
               name="firstName"
               value={form.firstName}
@@ -77,7 +77,7 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
             <input
               name="lastName"
               value={form.lastName}
@@ -88,7 +88,7 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
             <input
               name="birthDate"
               type="date"
@@ -100,7 +100,7 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Categorie</label>
             <select
               name="category"
               value={form.category}
@@ -113,7 +113,7 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Niveau</label>
             <select
               name="niveau"
               value={form.niveau}
@@ -139,7 +139,7 @@ export default function CreateStudentPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date d'inscription</label>
             <input
               name="registrationDate"
               type="date"
@@ -151,7 +151,7 @@ export default function CreateStudentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Parent Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone du parent</label>
             <input
               name="parentPhoneNumber"
               value={form.parentPhoneNumber}
@@ -169,7 +169,7 @@ export default function CreateStudentPage() {
                 checked={form.isGarde}
                 onChange={handleChange}
               />
-              <span>After-School Care</span>
+              <span>Garde après l'école</span>
             </label>
             
             <label className="flex items-center space-x-2">
@@ -179,7 +179,7 @@ export default function CreateStudentPage() {
                 checked={form.usesTransport}
                 onChange={handleChange}
               />
-              <span>Uses Transport</span>
+              <span>Utilise le transport</span>
             </label>
             
             <label className="flex items-center space-x-2">
