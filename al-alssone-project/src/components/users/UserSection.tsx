@@ -10,7 +10,7 @@ interface User {
   phoneNumber: number;
   firstName: string;
   lastName: string;
-  createdAt?: string;
+  createdAt: string;
 }
 
 type FormState = {

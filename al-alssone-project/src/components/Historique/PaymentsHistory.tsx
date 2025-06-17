@@ -7,12 +7,33 @@ import { Download, Search as SearchIcon } from 'lucide-react';
 
 const { Search } = Input;
 
+interface Student {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  familyName?: string;
+}
+
+interface Payment {
+  _id: string;
+  studentId: string;
+  amountPaid: number;
+  status: string;
+  period: string;
+  isArchived: boolean;
+}
+
+interface PaymentWithStudent extends Payment {
+  student: Student;
+}
+
 const HistoriquePaiements = () => {
-  const [payments, setPayments] = useState([]);
-  const [filteredPayments, setFilteredPayments] = useState([]);
-  const [students, setStudents] = useState([]);
+  const [payments, setPayments] = useState<PaymentWithStudent[]>([]);
+  const [filteredPayments, setFilteredPayments] = useState<PaymentWithStudent[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +47,7 @@ const HistoriquePaiements = () => {
         setPayments(paymentsRes.data);
         setFilteredPayments(paymentsRes.data);
       } catch (error) {
+        setError('Failed to fetch payment history');
         console.error('Erreur lors du chargement des données :', error);
       } finally {
         setLoading(false);
@@ -133,6 +155,9 @@ const HistoriquePaiements = () => {
       sorter: (a, b) => (a.isArchived ? 1 : -1) - (b.isArchived ? 1 : -1)
     }
   ];
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6">

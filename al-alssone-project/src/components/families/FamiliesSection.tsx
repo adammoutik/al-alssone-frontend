@@ -8,9 +8,26 @@ import {
   FaEnvelope
 } from "react-icons/fa";
 
+interface Student {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  category: string;
+  niveau: string;
+}
+
+interface Family {
+  _id: string;
+  familyName: string;
+  email: string;
+  children: Student[];
+  discountPercentage: number;
+  IsEligible: boolean;
+}
+
 export default function FamiliesManager() {
-  const [families, setFamilies] = useState([]);
-  const [students, setStudents] = useState([]);
+  const [families, setFamilies] = useState<Family[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [form, setForm] = useState({
     familyName: "",
     email: "",
@@ -27,7 +44,8 @@ export default function FamiliesManager() {
   });
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [modalMessage, setModalMessage] = useState({ text: "", type: "" });
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +59,8 @@ export default function FamiliesManager() {
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load data. Please try again later.");
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -186,6 +206,7 @@ export default function FamiliesManager() {
     family?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (loading) return <div>Loading...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
   return (
