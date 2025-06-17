@@ -28,6 +28,7 @@
     "@react-jvectormap/world": "^1.1.2",
     "@tailwindcss/postcss": "^4.1.4",
     "@tanstack/react-query": "^5.80.6",
+    "@vitalets/google-translate-api": "^9.2.1",
     "antd": "^5.25.4",
     "apexcharts": "^4.5.0",
     "axios": "^1.8.4",

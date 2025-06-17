@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
+
+// interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+//   label: string;
+//   error?: string;
+//   autoComplete?: string;
+// }
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);

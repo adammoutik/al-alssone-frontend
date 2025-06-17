@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Table, Input, Tag } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import api from '../../services/axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { Download, Search as SearchIcon } from 'lucide-react';
 
-const { Search } = Input;
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface Student {
   _id: string;
@@ -21,19 +26,17 @@ interface Payment {
   status: string;
   period: string;
   isArchived: boolean;
+  createdAt: string;
 }
 
-interface PaymentWithStudent extends Payment {
-  student: Student;
-}
+const { Search } = Input;
 
 const HistoriquePaiements = () => {
-  const [payments, setPayments] = useState<PaymentWithStudent[]>([]);
-  const [filteredPayments, setFilteredPayments] = useState<PaymentWithStudent[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +50,6 @@ const HistoriquePaiements = () => {
         setPayments(paymentsRes.data);
         setFilteredPayments(paymentsRes.data);
       } catch (error) {
-        setError('Failed to fetch payment history');
         console.error('Erreur lors du chargement des données :', error);
       } finally {
         setLoading(false);
@@ -103,16 +105,16 @@ const HistoriquePaiements = () => {
     doc.save(`historique_paiements_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
-  const colonnes = [
+  const colonnes: ColumnsType<Payment> = [
     {
       title: 'Nom de l\'élève',
       dataIndex: 'studentId',
       key: 'eleve',
-      render: (id) => {
+      render: (id: string) => {
         const student = students.find(s => s._id === id);
         return student ? `${student.firstName} ${student.lastName}` : 'Inconnu';
       },
-      sorter: (a, b) => {
+      sorter: (a: Payment, b: Payment) => {
         const sA = students.find(s => s._id === a.studentId);
         const sB = students.find(s => s._id === b.studentId);
         const nA = sA ? `${sA.firstName} ${sA.lastName}` : '';
@@ -124,40 +126,37 @@ const HistoriquePaiements = () => {
       title: 'Montant',
       dataIndex: 'amountPaid',
       key: 'montant',
-      render: (val) => `${val} MAD`,
-      sorter: (a, b) => a.amountPaid - b.amountPaid
+      render: (val: number) => `${val} MAD`,
+      sorter: (a: Payment, b: Payment) => a.amountPaid - b.amountPaid
     },
     {
       title: 'Statut',
       dataIndex: 'status',
       key: 'statut',
-      render: (status) => (
+      render: (status: string) => (
         <Tag color={status === 'paid' ? 'green' : 'red'}>
           {status.toUpperCase()}
         </Tag>
       ),
-      sorter: (a, b) => a.status.localeCompare(b.status)
+      sorter: (a: Payment, b: Payment) => a.status.localeCompare(b.status)
     },
     {
       title: 'Date de création',
       dataIndex: 'createdAt',
       key: 'date',
-      sorter: (a, b) => a.createdAt.localeCompare(b.createdAt)
+      sorter: (a: Payment, b: Payment) => a.createdAt.localeCompare(b.createdAt)
     },
     {
       title: 'Type',
       key: 'type',
-      render: (_, record) => (
+      render: (_: unknown, record: Payment) => (
         <Tag color={record.isArchived ? 'orange' : 'blue'}>
           {record.isArchived ? 'Archivé' : 'Actif'}
         </Tag>
       ),
-      sorter: (a, b) => (a.isArchived ? 1 : -1) - (b.isArchived ? 1 : -1)
+      sorter: (a: Payment, b: Payment) => (a.isArchived ? 1 : -1) - (b.isArchived ? 1 : -1)
     }
   ];
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div className="p-6">

@@ -12,9 +12,9 @@ import PaymentsHistory from "./components/Historique/PaymentsHistory";
 import NotificationPage from "./pages/notifications/NotificationPage";
 import StudentForm from "./components/students/StudentForm";
 import StudentsListPage from "./components/students/StudentsList";
-import Acceuil from "./components/acceuil/acceuil";
 import StudentPaymentsPage from "./components/students/StudentPaymentsPage";
 import { TranslationProvider } from "./context/TranslationContext"; 
+import Accueil from "./components/acceuil/Acceuil";
 
 export default function App() {
   return (
@@ -38,7 +38,7 @@ export default function App() {
 
           {/* Auth Layout */}
           <Route path="/signin" element={<SignIn />} />
-          <Route index path="/acceuil" element={<Acceuil />} />
+          <Route index path="/acceuil" element={<Accueil />} />
           <Route path="/public/student/payments/:studentCode" element={<StudentPaymentsPage />} />
         </Routes>
       </Router>

@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import api from "../../services/axios";
 import { FaEye, FaEdit, FaTrashAlt, FaFilePdf } from "react-icons/fa";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+interface Student {
+  _id: string;
+  studentCode?: string;
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  category: string;
+  niveau: string;
+  familyId: string;
+  isGarde: boolean;
+  usesTransport: boolean;
+  registrationDate: string;
+  parentPhoneNumber: string;
+  isActive: boolean;
+}
+
 export default function StudentsListPage() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Student>({
     _id: "",
     firstName: "",
     lastName: "",
@@ -20,8 +36,8 @@ export default function StudentsListPage() {
     parentPhoneNumber: "",
     isActive: true,
   });
-  const [students, setStudents] = useState([]);
-  const [viewedStudent, setViewedStudent] = useState(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [viewedStudent, setViewedStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedNiveau, setSelectedNiveau] = useState("");
@@ -44,7 +60,7 @@ export default function StudentsListPage() {
   }, []);
 
   // Handle edit
-  const handleEdit = (student) => {
+  const handleEdit = (student: Student) => {
     setForm({
       ...student,
       birthDate: student.birthDate ? student.birthDate.split('T')[0] : "",
@@ -55,7 +71,7 @@ export default function StudentsListPage() {
   };
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       await api.put(`/students/${form._id}`, form);
@@ -69,7 +85,7 @@ export default function StudentsListPage() {
   };
 
   // Handle delete
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this student?")) {
       try {
         await api.delete(`/students/${id}`);

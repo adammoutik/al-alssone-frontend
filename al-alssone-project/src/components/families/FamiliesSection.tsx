@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import api from "../../services/axios";
 import {
-  FaEye,
   FaEdit,
   FaTrashAlt,
   FaUserPlus,
@@ -12,15 +11,16 @@ interface Student {
   _id: string;
   firstName: string;
   lastName: string;
-  category: string;
-  niveau: string;
+  category?: string;
+  niveau?: string;
 }
 
 interface Family {
   _id: string;
   familyName: string;
   email: string;
-  children: Student[];
+  children?: Student[];
+  discountChild?: Student;
   discountPercentage: number;
   IsEligible: boolean;
 }
@@ -28,7 +28,14 @@ interface Family {
 export default function FamiliesManager() {
   const [families, setFamilies] = useState<Family[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    familyName: string;
+    email: string;
+    discountPercentage: number;
+    isEligible: boolean;
+    discountChild: string;
+    id: string | null;
+  }>({
     familyName: "",
     email: "",
     discountPercentage: 20,
@@ -45,7 +52,6 @@ export default function FamiliesManager() {
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [modalMessage, setModalMessage] = useState({ text: "", type: "" });
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,22 +65,28 @@ export default function FamiliesManager() {
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load data. Please try again later.");
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setForm((prevForm) => ({
       ...prevForm,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setForm((prevForm) => ({
+      ...prevForm,
+      [name]: checked,
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage({ text: "", type: "" });
 
@@ -97,16 +109,16 @@ export default function FamiliesManager() {
       const familiesRes = await api.get("/families");
       setFamilies(familiesRes.data || []);
       resetForm();
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error saving family:", err);
       setMessage({
-        text: err.response?.data?.message || "Error saving family. Please try again.",
+        text: err instanceof Error ? err.message : "Error saving family. Please try again.",
         type: "error",
       });
     }
   };
 
-  const handleEdit = (family) => {
+  const handleEdit = (family: Family) => {
     setForm({
       familyName: family.familyName || "",
       email: family.email || "",
@@ -117,24 +129,24 @@ export default function FamiliesManager() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this family?")) {
       try {
         await api.delete(`/families/${id}`);
         setMessage({ text: "Family deleted successfully!", type: "success" });
         const familiesRes = await api.get("/families");
         setFamilies(familiesRes.data || []);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Error deleting family:", err);
         setMessage({ 
-          text: err.response?.data?.message || "Error deleting family.", 
+          text: err instanceof Error ? err.message : "Error deleting family.", 
           type: "error" 
         });
       }
     }
   };
 
-  const handleAddChild = async (e) => {
+  const handleAddChild = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await api.post(`/families/${addChildForm.familyId}/children`, {
@@ -151,10 +163,10 @@ export default function FamiliesManager() {
         setAddChildForm({ familyId: "", studentId: "" });
         setModalMessage({ text: "", type: "" });
       }, 1500);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error adding child:", err);
       setModalMessage({
-        text: err.response?.data?.message || "Error adding child to family",
+        text: err instanceof Error ? err.message : "Error adding child to family",
         type: "error",
       });
     }
@@ -171,14 +183,14 @@ export default function FamiliesManager() {
     });
   };
 
-  const renderChildren = (family) => {
+  const renderChildren = (family: Family) => {
     if (!family.children || family.children.length === 0) {
       return <span className="text-gray-500">Aucun enfant</span>;
     }
 
     return (
       <div className="space-y-1">
-        {family.children.map((student, index) => (
+        {family.children.map((student: Student, index: number) => (
           <div key={student._id || index} className="flex items-center justify-between">
             <div className="flex items-center">
               <span>{student.firstName} {student.lastName}</span>
@@ -206,7 +218,6 @@ export default function FamiliesManager() {
     family?.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div>Loading...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
 
   return (
@@ -279,10 +290,11 @@ export default function FamiliesManager() {
               type="checkbox"
               name="isEligible"
               checked={form.isEligible}
-              onChange={handleChange}
+              onChange={handleCheckboxChange}
             />
             <span className="text-sm font-medium text-gray-700">
-Est éligible aux réductions ?            </span>
+              Est éligible aux réductions ?
+            </span>
           </label>
         </div>
 

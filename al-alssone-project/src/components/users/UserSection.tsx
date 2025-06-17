@@ -10,7 +10,7 @@ interface User {
   phoneNumber: number;
   firstName: string;
   lastName: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 type FormState = {
@@ -69,7 +69,7 @@ export default function UserSection() {
         _id: user._id || "",
         username: user.username || "",
         email: user.email || "",
-        role: user.role === "admin" ? "admin" : "assistant",
+        role: (user.role === "admin" ? "admin" : "assistant") as "admin" | "assistant",
         phoneNumber: Number(user.phoneNumber) || 0,
         firstName: user.firstName || "",
         lastName: user.lastName || "",

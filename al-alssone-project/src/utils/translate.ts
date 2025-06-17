@@ -1,6 +1,6 @@
-import { translate } from '@vitalets/google-translate-api';
+import { translate as googleTranslate } from '@vitalets/google-translate-api';
 
 export const translate = async (text: string, targetLang: string) => {
-  const result = await translate(text, { to: targetLang });
+  const result = await googleTranslate(text, { to: targetLang });
   return result.text;
 };

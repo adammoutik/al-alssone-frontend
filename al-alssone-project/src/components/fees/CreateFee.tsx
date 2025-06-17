@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import api from "../../services/axios";
 import { FaEye, FaEdit, FaTrashAlt } from "react-icons/fa"; // Importing icons
 
@@ -6,21 +6,29 @@ interface Fee {
   _id: string;
   type: string;
   category: string;
-  description: string;
+  description?: string;
   amount: number;
   isActive: boolean;
+  frequency?: string;
+}
+
+interface FormData {
+  type: string;
+  category: string;
+  description: string;
+  amount: string;
+  isActive: boolean;
   frequency: string;
+  id: string | null;
 }
 
 export default function FeesDashboard() {
   const [fees, setFees] = useState<Fee[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState<FormData>({
     type: "registration",
     category: "maternelle",
     description: "",
-    amount: 0,
+    amount: "",
     isActive: true,
     frequency: "Monthly",
     id: null,
@@ -33,11 +41,8 @@ export default function FeesDashboard() {
     try {
       const response = await api.get("/fees");
       setFees(response.data);
-    } catch (err) {
-      setError("Failed to fetch fees");
-      console.error(err);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des frais:", error);
     }
   };
 
@@ -45,48 +50,65 @@ export default function FeesDashboard() {
     fetchFees();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === "number" ? parseFloat(value) : value
-    }));
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: value,
+    });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: checked,
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
 
+    const dataToSend = {
+      ...form,
+      amount: Number(form.amount),
+    };
+
     try {
-      if (formData.id !== null) {
-        await api.put(`/fees/${formData.id}`, formData);
+      if (form.id !== null) {
+        await api.put(`/fees/${form.id}`, dataToSend);
         setMessage("Frais mis à jour avec succès.");
       } else {
-        await api.post("/fees", formData);
+        await api.post("/fees", dataToSend);
         setMessage("Frais créés avec succès.");
       }
 
       fetchFees();
-      setFormData({
+      setForm({
         type: "registration",
         category: "maternelle",
         description: "",
-        amount: 0,
+        amount: "",
         isActive: true,
         frequency: "Monthly",
         id: null,
       });
-    } catch (err) {
-      setError("Failed to create fee");
-      console.error(err);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi des frais:", error);
       setMessage("Une erreur s'est produite. Veuillez réessayer.");
     }
   };
 
   const handleEdit = (fee: Fee) => {
-    setFormData({
-      ...fee,
-      id: fee._id, // 👈 Ensure MongoDB _id is used
+    setForm({
+      type: fee.type,
+      category: fee.category,
+      description: fee.description || '',
+      amount: fee.amount.toString(),
+      isActive: fee.isActive,
+      frequency: fee.frequency || 'Monthly',
+      id: fee._id
     });
     setMessage("");
   };
@@ -94,28 +116,11 @@ export default function FeesDashboard() {
   const handleDelete = async (id: string) => {
     try {
       await api.delete(`/fees/${id}`);
-      setFees(fees.filter(fee => fee._id !== id));
+      fetchFees();
       setMessage("Frais supprimés avec succès.");
-    } catch (err) {
-      setError("Failed to delete fee");
-      console.error(err);
+    } catch (error) {
+      console.error("Erreur lors de la suppression des frais", error);
       setMessage("Échec de la suppression des frais.");
-    }
-  };
-
-  const handleToggleStatus = async (fee: Fee) => {
-    try {
-      await api.patch(`/fees/${fee._id}`, {
-        isActive: !fee.isActive
-      });
-      setFees(fees.map(f => 
-        f._id === fee._id ? { ...f, isActive: !f.isActive } : f
-      ));
-      setMessage("Status mis à jour avec succès.");
-    } catch (err) {
-      setError("Failed to update fee status");
-      console.error(err);
-      setMessage("Échec de la mise à jour du statut.");
     }
   };
 
@@ -124,15 +129,12 @@ export default function FeesDashboard() {
       .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 min-h-screen">
       {/* Form Section */}
       <form onSubmit={handleSubmit} className="p-6 border rounded-2xl shadow-xl space-y-4 bg-white h-fit">
         <h2 className="text-2xl font-bold text-gray-800 border-b pb-2">
-          {formData.id ? "Modifier frais" : "Créer Frais"}
+          {form.id ? "Modifier frais" : "Créer Frais"}
         </h2>
 
         {message && <p className="text-sm text-blue-600">{message}</p>}
@@ -141,8 +143,8 @@ export default function FeesDashboard() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Type de frais</label>
           <select
             name="type"
-            value={formData.type}
-            onChange={handleInputChange}
+            value={form.type}
+            onChange={handleChange}
             className="border p-2 w-full rounded"
           >
             <option value="registration">Inscription</option>
@@ -157,8 +159,8 @@ export default function FeesDashboard() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
           <select
             name="category"
-            value={formData.category}
-            onChange={handleInputChange}
+            value={form.category}
+            onChange={handleChange}
             className="border p-2 w-full rounded"
           >
             <option value="maternelle">Maternelle</option>
@@ -170,8 +172,8 @@ export default function FeesDashboard() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea
             name="description"
-            value={formData.description}
-            onChange={handleInputChange}
+            value={form.description}
+            onChange={handleChange}
             className="border p-2 w-full rounded"
             placeholder="Short description"
           />
@@ -182,8 +184,8 @@ export default function FeesDashboard() {
           <input
             name="amount"
             type="number"
-            value={formData.amount}
-            onChange={handleInputChange}
+            value={form.amount}
+            onChange={handleChange}
             className="border p-2 w-full rounded"
             required
           />
@@ -195,31 +197,18 @@ export default function FeesDashboard() {
             <input
               type="checkbox"
               name="isActive"
-              checked={formData.isActive}
-              onChange={handleInputChange}
+              checked={form.isActive}
+              onChange={handleCheckboxChange}
             />
             <span>Yes</span>
           </label>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fréquence</label>
-          <select
-            name="frequency"
-            value={formData.frequency}
-            onChange={handleInputChange}
-            className="border p-2 w-full rounded"
-          >
-            <option value="Monthly">Monthly</option>
-            <option value="Annually">Annually</option>
-          </select>
         </div>
 
         <button
           type="submit"
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          {formData.id ? "Update" : "Create"}
+          {form.id ? "Update" : "Create"}
         </button>
       </form>
 

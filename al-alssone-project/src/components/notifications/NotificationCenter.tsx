@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaBell, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/axios';
-import { Notification, Student } from '../types/notification';
+import { Notification, Student } from './types/notification';
 
 const NotificationCenter: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [students, setStudents] = useState<Record<string, Student>>({});
+  const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -17,13 +17,10 @@ const NotificationCenter: React.FC = () => {
 
   const fetchStudentDetails = useCallback(async (studentId: string) => {
     try {
-      if (students[studentId]) return; // Already fetched
+      if (students.find((s: Student) => s._id === studentId)) return; // Already fetched
       
       const response = await api.get<Student>(`/students/${studentId}`);
-      setStudents(prev => ({
-        ...prev,
-        [studentId]: response.data
-      }));
+      setStudents(prev => [...prev, response.data]);
     } catch (error) {
       console.error('Error fetching student:', error);
     }
@@ -51,7 +48,7 @@ const NotificationCenter: React.FC = () => {
 
       setNotifications(prev => page === 1 ? response.data : [...prev, ...response.data]);
       setHasMore(response.data.length === 20);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching notifications:', err);
       setError('Failed to load notifications. Please try again.');
     } finally {
@@ -144,17 +141,9 @@ const NotificationCenter: React.FC = () => {
             </div>
           ) : (
             notifications.map(notification => {
-              const student = notification.paymentId?.studentId 
-                ? students[notification.paymentId.studentId]
+              const studentName = notification.paymentId?.studentId 
+                ? students.find((s: Student) => s._id === notification.paymentId?.studentId)?.firstName 
                 : null;
-              
-              const studentName = student 
-                ? `${student.firstName} ${student.lastName}`
-                : notification.paymentId?.studentId
-                  ? 'Loading student...'
-                  : null;
-
-              const familyName = notification.familyId?.familyName || null;
 
               return (
                 <div

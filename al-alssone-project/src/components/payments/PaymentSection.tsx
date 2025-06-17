@@ -25,6 +25,11 @@ interface Payment {
   studentName?: string;
 }
 
+interface Student {
+  _id: string;
+  name: string;
+}
+
 type FormState = {
   _id: string;
   studentId: string;
@@ -76,7 +81,7 @@ export default function PaymentsDashboard() {
 
       const paymentsData = paymentsRes.data.map((payment: any) => ({
         ...payment,
-        studentName: studentsData.find(s => s._id === payment.studentId)?.name || "Unknown"
+        studentName: studentsData.find((s: Student) => s._id === payment.studentId)?.name || "Unknown"
       }));
 
       setStudents(studentsData);

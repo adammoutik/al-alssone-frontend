@@ -1,14 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import api from '../services/axios';
 
-interface AuthContextType {
+type AuthContextType = {
   token: string | null;
   isAuthenticated: boolean;
   setAuthToken: (token: string | null) => void;
   logout: () => void;
   loading: boolean;
-}
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
     }
     setLoading(false);
   }, []);
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setAuthToken(null);
-    navigate('/sign-in');
+    navigate('/sign in');
   };
 
   const value = {

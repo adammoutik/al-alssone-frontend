@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "../../services/axios";
+import axios from "axios";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Button from "../ui/button/Button";
@@ -25,7 +25,7 @@ export default function UserProfile() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await api.get(`/users/${userId}`);
+        const res = await axios.get(`/users/${userId}`);
         setUser(res.data);
         setTempUser(res.data);
       } catch (error) {
@@ -55,7 +55,7 @@ export default function UserProfile() {
     try {
       const dataToSend = { ...tempUser };
       if (!dataToSend.password) {
-        delete dataToSend.password; // don’t update password if empty
+        dataToSend.password = " ";
       }
 
       const res = await axios.patch(`/users/${userId}`, dataToSend);
