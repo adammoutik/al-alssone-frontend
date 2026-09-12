@@ -87,19 +87,6 @@ npm run lint
 
 This frontend talks to the [al-alssone-backend](https://github.com/adammoutik/al-alssone-backend) NestJS API. By default, the API base URL is hardcoded in `src/services/axios.ts`:
 
-```ts
-const api = axios.create({
-  baseURL: 'http://localhost:3000',
-});
-```
-
-and the notifications WebSocket connection is set in `src/context/WebSocketContext.tsx`:
-
-```ts
-const ws = new WebSocket('ws://http://[::1]:3000/notifications');
-```
-
-To point the app at a different backend (e.g. a deployed instance), update these values accordingly. ⚠️ Note the WebSocket URL above currently mixes the `ws://` and `http://` schemes — this should be corrected to just `ws://<host>:3000/notifications` (or `wss://` in production).
 
 Make sure the backend's CORS settings and `.env` (`DB_URL`, `JWT`, mail credentials) are configured — see the [backend README](https://github.com/adammoutik/al-alssone-backend#readme) for setup instructions.
 
